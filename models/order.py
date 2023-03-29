@@ -8,6 +8,9 @@ class OrderType(enum.Enum):
     BUY = 'BUY'
     SELL = 'SELL'
 
+class OrderStatus(enum.Enum):
+    OPEN = 'OPEN'
+    CLOSE = 'CLOSE'
 
 class Order(Base):
     __tablename__ = 'order'
@@ -23,10 +26,12 @@ class Order(Base):
     amount = Column(Numeric)
     limit_price = Column(Numeric)
     order_type = Column(Enum(OrderType))
+    order_status = Column(Enum(OrderStatus))
 
-    def __init__(self, account, symbol, amount, limit_price, order_type):
+    def __init__(self, account, symbol, amount, limit_price, order_type, order_status):
         self.account = account
         self.symbol = symbol
         self.amount = amount
         self.limit_price = limit_price
         self.order_type = order_type
+        self.order_status = order_status

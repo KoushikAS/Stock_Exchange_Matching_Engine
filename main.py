@@ -2,13 +2,14 @@ from models.base import Session, engine, Base
 from models.account import Account
 from models.symbol import Symbol
 from models.position import Position
-from models.order import OrderType, Order
+from models.order import OrderType, Order, OrderStatus
 from sqlalchemy import select
 
+'''
 Base.metadata.create_all(engine)
 session = Session()
 
-'''
+
 sym1 = Symbol("SPY")
 sym2 = Symbol("BTC")
 sym3 = Symbol("T5asdf")
@@ -31,15 +32,18 @@ session.add(position2)
 session.add(position3)
 session.add(position4)
 
+session.commit()
+session.close()
+
 
 sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()
 account1 = session.execute(select(Account).where(Account.id == 123456)).first()
 account2 = session.execute(select(Account).where(Account.id == 1234567890)).first()
 
 
-order1 = Order(account1[0], sym1[0], 25, 25, OrderType.BUY)
-order2 = Order(account1[0], sym1[0], 30, 20, OrderType.BUY)
-order3 = Order(account2[0], sym1[0], 25, 30, OrderType.SELL)
+order1 = Order(account1[0], sym1[0], 25, 25, OrderType.BUY, OrderStatus.OPEN)
+order2 = Order(account1[0], sym1[0], 30, 20, OrderType.BUY, OrderStatus.OPEN)
+order3 = Order(account2[0], sym1[0], 25, 30, OrderType.SELL, OrderStatus.OPEN)
 
 session.add(order1)
 session.add(order2)
@@ -49,4 +53,5 @@ session.commit()
 session.close()
 
 print("Session committed")
+
 '''
