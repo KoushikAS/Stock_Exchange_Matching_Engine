@@ -15,7 +15,6 @@ def getOpenOrder(session, sym, order_type, orderBy):
 
 
 def closeOrder(session, order, exchange_qty, exchange_price):
-
     if order.amount > exchange_qty:
         order.amount -= exchange_qty
         closed_order = Order(order.account, order.symbol, exchange_qty, exchange_price,
@@ -26,6 +25,13 @@ def closeOrder(session, order, exchange_qty, exchange_price):
         order.limit_price = exchange_price
 
     session.add(order)
+
+
+def bestPrice(buy_order, sell_order):
+    if buy_order.create_time < sell_order.create_time:
+        return buy_order.limit_price
+    else:
+        return sell_order.limit_price
 
 
 def matchOrder(session, sym):
@@ -40,7 +46,7 @@ def matchOrder(session, sym):
             break
 
         exchange_qty = min(buy_order.amount, sell_order.amount)
-        exchange_price = buy_order.limit_price
+        exchange_price = bestPrice(buy_order, sell_order)
 
         closeOrder(session, buy_order, exchange_qty, exchange_price)
         closeOrder(session, sell_order, exchange_qty, exchange_price)
@@ -50,7 +56,6 @@ def matchOrder(session, sym):
 
 Base.metadata.create_all(engine)
 session = Session()
-
 
 sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()
 
@@ -102,5 +107,3 @@ session.commit()
 session.close()
 '''
 print("Session committed")
-
-
