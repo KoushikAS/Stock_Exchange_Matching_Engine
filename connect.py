@@ -43,6 +43,7 @@ def receive_connection():
                     newAcc = Account(id=id, balance=balance)
                     session.add(newAcc)
                     session.commit()
+                    print("new acc added")
                 else:
                     print("account already exists error")
                 return
