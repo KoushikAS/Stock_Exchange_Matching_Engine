@@ -21,7 +21,7 @@ def receive_connection():
             newline_rec = True
         else:
             buffer += xml_size_str
-
+    print(buffer)
     xml_size = int(buffer)
     action_xml = c.recv(xml_size)
     try:
