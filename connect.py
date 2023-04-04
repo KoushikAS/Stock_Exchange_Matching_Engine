@@ -66,23 +66,23 @@ def receive_connection():
                 # error if the given account does not exist
                 sym = entry.attrib.get('sym')
                 print(sym)
-                if session.query(Symbol).filter(name=sym).one() == None:
+                if session.query(Symbol).filter(Symbol.name==sym).one() == None:
                     symbol = create_symbol(session, sym)
                 else:
-                    symbol = session.query(Symbol).filter(name=sym).one()
+                    symbol = session.query(Symbol).filter(Symbol.name==sym).one()
                 print(symbol)
                 for e in entry:
                     account = e.attrib.get('id')
                     amt = int(e.text)
                     # TODO: Get matching account for ^, either add a position or add to position amt
-                    if session.query(Account).filer(id=account).one() == None:
+                    if session.query(Account).filer(Account.id==account).one() == None:
                         print("account does not exists error")
                         # generate error xml piece
-                    pos = session.query(Position).filter(symbol=symbol, account_id=account).one()
+                    pos = session.query(Position).filter(Position.symbol==symbol, Position.account_id==account).one()
                     if pos != None:
                         pos.amount += amt
                     else:
-                        Position.__init__(Position, symbol, amt, select(Account).where(Account.id == account))
+                        Position.__init__(Position, symbol, amt, session.query(Account).filer(Account.id==account).one())
                 session.commit()
             else:
                 raise Exception("Malformatted xml in create")
