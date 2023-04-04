@@ -96,10 +96,12 @@ def create_order(session: Session, entry: ET.Element, account: Account) -> str:
 def cancel_order(session: Session, entry: ET.Element, account: Account) -> str:
     id = entry.attrib.get('id')
     order_to_cancel = session.query(Order).filter(Order.id==id).first()
+    print(account.id)
+    print(order_to_cancel.account.id)
     if order_to_cancel is None:
         print("tried to cancel an order that does not exist")
         return "error: tried to cancel an order that does not exist\n"
-    if account != order_to_cancel.account:
+    if account.id != order_to_cancel.account.id:
         print("tried to cancel a order that you do not own")
         return "error: tried to cancel a order that you do not own\n"
     
@@ -111,10 +113,12 @@ def query_order(session: Session, entry: ET.Element, account: Account) -> str:
     results = ''
     id = entry.attrib.get('id')
     order_to_query = session.query(Order).filter(Order.id==id).first()
+    print(account.id)
+    print(order_to_query.account.id)
     if order_to_query is None:
         print("tried to cancel an order that does not exist")
         return "error: tried to cancel an order that does not exist\n"
-    if account != order_to_query.account:
+    if account.id != order_to_query.account.id:
         print("tried to cancel a order that you do not own")
         return "error: tried to cancel a order that you do not own\n"
     # get this order from the db
