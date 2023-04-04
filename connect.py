@@ -17,7 +17,6 @@ def receive_connection():
         f = open("model_xml.txt", "r")
         for line in f:
             if i == 0:
-                print(line.strip())
                 xml_size = int(line.strip())
             else:
                 action_xml += line
@@ -49,23 +48,19 @@ def receive_connection():
         for entry in xml_tree:
             session = Session()
             if entry.tag == 'account':
-                # create an account in db with id=entry.attrib.get('id') and balance=entry.attrib.get('balance')
-                # error if the account already exists
-                # TODO: Implement
                 id = entry.attrib.get('id')
                 balance = entry.attrib.get('balance')
-                print(balance)
                 if not account_exists(session, id):
                     newAcc = Account(id=id, balance=balance)
                     session.add(newAcc)
                     session.commit()
-                    print("new acc added")
+                    print(f"new acc: {id} added")
                     # generate response xml piece
                 else:
                     print("account already exists error")
                     # generate error xml piece
-                return
             elif entry.tag == 'symbol':
+                print("got a symbol tag")
                 # create a symbol for the given account
                 # error if the given account does not exist
                 sym = entry.attrib.get('sym')

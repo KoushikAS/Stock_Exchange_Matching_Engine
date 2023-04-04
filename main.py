@@ -57,20 +57,9 @@ def matchOrder(session, sym):
 
 if __name__ == "__main__":
     Base.metadata.create_all(engine)
-    # print(Base.metadata.tables.keys())
-    # session = Session()
-    # newAcc = Account(id=156, balance=1000)
-    # session.add(newAcc)
-    # session.commit()
-
-    # session2 = Session()
-    # lst = session2.query(Account).all()
-    # for a in lst:
-    #     print(a)
-    #     print(str(a.id) + " : " + str(a.balance))
-    while (True):
+    # while (True):
         # add the ability to schedule from a core pool here
-        receive_connection()
+    receive_connection()
         
 
     # sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()
