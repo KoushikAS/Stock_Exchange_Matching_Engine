@@ -142,7 +142,6 @@ def receive_connection(testing: bool, path: str):
     root = minidom.Document()
     res = root.createElement('results')
     root.appendChild(res)
-    root.domConfig.setParameter('format-pretty-print', True)
 
     if xml_tree.tag == 'create':
         for entry in xml_tree:
