@@ -1,29 +1,44 @@
 import socket, time
 from random import randint 
 import xml.etree.ElementTree as ET
+from sqlalchemy import select
 from models.order import OrderType, Order, OrderStatus
 from models.account import Account, account_exists
 from models.base import Session
+from models.symbol import Symbol
 
 
 def receive_connection():
-    newline_rec = False
-    buffer = ''
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # socket.setblocking(0)
-    client_socket.bind(('localhost', 12345))
-    client_socket.listen(5)
-    c, addr = client_socket.accept()
-    while not newline_rec:
-        xml_size_bytes = c.recv(1)
-        xml_size_str = xml_size_bytes.decode()
-        if xml_size_str == '\n':
-            newline_rec = True
-        else:
-            buffer += xml_size_str
-    print(buffer)
-    xml_size = int(buffer)
-    action_xml = c.recv(xml_size)
+    testing = True
+    xml_size = 0
+    action_xml = ''
+    if testing:
+        i = 0
+        file = input("enter xml file here:")
+        f = open(file, "r")
+        for line in f:
+            if i == 0:
+                xml_size = int(line.strip())
+            else:
+                action_xml += line
+    else:
+        newline_rec = False
+        buffer = ''
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # socket.setblocking(0)
+        client_socket.bind(('localhost', 12345))
+        client_socket.listen(5)
+        c, addr = client_socket.accept()
+        while not newline_rec:
+            xml_size_bytes = c.recv(1)
+            xml_size_str = xml_size_bytes.decode()
+            if xml_size_str == '\n':
+                newline_rec = True
+            else:
+                buffer += xml_size_str
+        xml_size = int(buffer)
+        action_xml = c.recv(xml_size)
+    print(action_xml)
     try:
         xml_tree = ET.fromstring(action_xml)
     except:
@@ -44,8 +59,10 @@ def receive_connection():
                     session.add(newAcc)
                     session.commit()
                     print("new acc added")
+                    # generate response xml piece
                 else:
                     print("account already exists error")
+                    # generate error xml piece
                 return
             elif entry.tag == 'symbol':
                 # create a symbol for the given account
@@ -55,7 +72,11 @@ def receive_connection():
                     account = e.attrib.get('id')
                     amt = int(e.text)
                     print(sym)
+                    if select(Symbol).where(Symbol.c.name == sym) == None:
+
                     # TODO: Get matching account for ^, either add a position or add to position amt
+                    if select(Account).where(Account.c.id == account) != None:
+                        
                 pass
             else:
                 raise Exception("Malformatted xml in create")

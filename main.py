@@ -5,9 +5,6 @@ from models.account import Account
 from models.symbol import Symbol
 from models.position import Position
 from models.order import OrderType, Order, OrderStatus
-from sqlalchemy import select, MetaData, create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy.exc import SQLAlchemyError
 from connect import receive_connection
 
 
