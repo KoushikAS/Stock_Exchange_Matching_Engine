@@ -21,4 +21,3 @@ class Position(Base):
         self.amount = amount
         self.account = account
 
-# def create_position(session, symbol_id, amount, account)
