@@ -6,6 +6,7 @@ from models.base import Session
 from models.symbol import Symbol
 from models.position import Position
 from models.executed_order import ExecutedOrder
+from xml.dom import minidom
 
 
 def get_test_xml(path: str) -> str:
@@ -42,19 +43,21 @@ def get_xml() -> str:
 # def generate_results(tag, ):
 #     results_xml = ''
 
-def create_account(session: Session, entry: ET.Element) -> str:
+def create_account(session: Session, entry: ET.Element, root: minidom.Document):
     id = entry.attrib.get('id')
     balance = entry.attrib.get('balance')
     if not account_exists(session, id):
         newAcc = Account(id=id, balance=balance)
         session.add(newAcc)
         session.commit()
-        # generate response xml piece
-        return 'created a new account\n'
+        xml_result = root.createElement('created')
+        xml_result.setAttribute('id', id)
     else:
-        print("account already exists error")
-        # generate error xml piece
-        return 'error\n'
+        xml_result = root.createElement('error')
+        xml_result.setAttribute('id', id)
+        text = root.createTextNode('Account already exists')
+        xml_result.appendChild(text)
+    root.appendChild(xml_result)
 
 def create_position(session: Session, entry: ET.Element, symbol: Symbol) -> str:
     results = ''
@@ -139,12 +142,16 @@ def receive_connection(testing: bool, path: str):
         print("XML was malformatted")
         return
     results_xml = ''
+    root = minidom.Document()
+    res = root.createElement('results') 
+    root.appendChild(res)
 
     if xml_tree.tag == 'create':
         for entry in xml_tree:
             session = Session()
             if entry.tag == 'account':
-                results_xml += create_account(session, entry)
+                create_account(session, entry, root)
+                print(root.toprettyxml(indent='\t'))
             elif entry.tag == 'symbol':
                 sym = entry.attrib.get('sym')
                 if session.query(Symbol).filter(Symbol.name==sym).first() is None:
