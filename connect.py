@@ -68,11 +68,11 @@ def receive_connection():
                     account = e.attrib.get('id')
                     amt = int(e.text)
                     print(sym)
-                    if select(Symbol).where(Symbol.c.name == sym) == None:
+                    if select(Symbol).where(Symbol.name == sym) == None:
                         pass
                     # TODO: Get matching account for ^, either add a position or add to position amt
-                    if select(Account).where(Account.c.id == account) != None:
-                        pass    
+                    if select(Account).where(Account.id == account) != None:
+                        pass
                 pass
             else:
                 raise Exception("Malformatted xml in create")
