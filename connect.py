@@ -5,7 +5,7 @@ from sqlalchemy import select
 from models.order import OrderType, Order, OrderStatus
 from models.account import Account, account_exists
 from models.base import Session
-from models.symbol import Symbol, create_symbol
+from models.symbol import Symbol
 from models.position import Position
 
 
