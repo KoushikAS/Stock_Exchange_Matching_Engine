@@ -62,15 +62,18 @@ def receive_connection():
                     # generate error xml piece
             elif entry.tag == 'symbol':
                 print("got a symbol tag")
+                session = Session()
                 # create a symbol for the given account
                 # error if the given account does not exist
                 sym = entry.attrib.get('sym')
                 print(sym)
                 if session.query(Symbol).filter(Symbol.name==sym).one() == None:
                     symbol = create_symbol(session, sym)
+                    session.commit()
                 else:
                     symbol = session.query(Symbol).filter(Symbol.name==sym).one()
                 print(symbol)
+                session = Session()
                 for e in entry:
                     account = e.attrib.get('id')
                     amt = int(e.text)
