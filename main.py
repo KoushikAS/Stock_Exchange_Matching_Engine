@@ -1,5 +1,3 @@
-import socket, time, sys
-import xml.etree.ElementTree as ET
 from models.base import engine, Base, Session
 from models.account import Account
 from models.symbol import Symbol
@@ -59,7 +57,7 @@ if __name__ == "__main__":
     Base.metadata.create_all(engine)
     # while (True):
         # add the ability to schedule from a core pool here
-    receive_connection()
+    receive_connection(True)
     session = Session()
     for e in session.query(Account).all():
         print("Account: " + str(e.id))
