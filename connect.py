@@ -123,7 +123,6 @@ def query_order(session: Session, entry: ET.Element, account: Account) -> str:
     results += f"Order is {order_to_query.order_status} with {order_to_query.amount} shares\n"
     executed = session.query(ExecutedOrder).filter(ExecutedOrder.order==order_to_query)
     for e in executed:
-        print("EEEEEEEEEEEEE: " + str(e.id))
         results += f"Executed {e.executed_amount} at {e.executed_price}, at {e.executed_time}\n"
     return results
 
@@ -161,7 +160,6 @@ def receive_connection(testing: bool, path: str):
                 raise Exception("Malformatted xml in create")
         # Call a response function to generate the response xml and send on socket connected to 12345
         # returns either an error xml or results xml for each transaction
-        return
     elif xml_tree.tag == 'transactions':
         session = Session()
         account_id = xml_tree.attrib.get('id')
@@ -179,7 +177,6 @@ def receive_connection(testing: bool, path: str):
                 results_xml += cancel_order(ses, entry, account)
             elif entry.tag == 'query':
                 results_xml += query_order(ses, entry, account)
-                print("results: " + results_xml)
             else:
                 raise Exception("Malformatted xml in transaction")
             ses.commit()
