@@ -70,8 +70,8 @@ if __name__ == "__main__":
     #     print(str(a.id) + " : " + str(a.balance))
     while (True):
         # add the ability to schedule from a core pool here
-        print("here")
         receive_connection()
+        
 
     # sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()
 

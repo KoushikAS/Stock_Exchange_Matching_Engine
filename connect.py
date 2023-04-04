@@ -14,8 +14,7 @@ def receive_connection():
     action_xml = ''
     if testing:
         i = 0
-        file = input("enter xml file here:")
-        f = open(file, "r")
+        f = open("model_xml.txt", "r")
         for line in f:
             if i == 0:
                 xml_size = int(line.strip())
