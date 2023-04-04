@@ -40,7 +40,7 @@ def get_xml() -> str:
     action_xml = c.recv(xml_size)
     return action_xml
 
-def create_account(session: Session, entry: ET.Element, root: minidom.Document):
+def create_account(session: Session, entry: ET.Element, root: minidom.Document, res: minidom.Document):
     id = entry.attrib.get('id')
     balance = entry.attrib.get('balance')
     if not account_exists(session, id):
@@ -54,7 +54,7 @@ def create_account(session: Session, entry: ET.Element, root: minidom.Document):
         xml_result.setAttribute('id', id)
         text = root.createTextNode('Account already exists')
         xml_result.appendChild(text)
-    root.appendChild(xml_result)
+    res.appendChild(xml_result)
 
 def create_position(session: Session, entry: ET.Element, symbol: Symbol) -> str:
     results = ''
@@ -147,7 +147,7 @@ def receive_connection(testing: bool, path: str):
         for entry in xml_tree:
             session = Session()
             if entry.tag == 'account':
-                create_account(session, entry, res)
+                create_account(session, entry, root, res)
                 print(root.toprettyxml(indent='\t'))
             elif entry.tag == 'symbol':
                 sym = entry.attrib.get('sym')
