@@ -50,7 +50,7 @@ def create_account(session: Session, entry: ET.Element) -> str:
         session.add(newAcc)
         session.commit()
         # generate response xml piece
-        return 'result\n'
+        return 'created a new account\n'
     else:
         print("account already exists error")
         # generate error xml piece
@@ -71,7 +71,7 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol) -> str:
         else:
             newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account_id).one())
             session.add(newPosition)
-        results += "successfully added\n"
+        results += f"successfully added a new position for account {account_id}\n"
     return results
 
 def create_order(session: Session, entry: ET.Element, account: Account) -> str:
@@ -130,9 +130,9 @@ def receive_connection(testing: bool, path: str):
     action_xml = ''
     if testing:
         action_xml = get_test_xml(path)
+        print(action_xml)
     else:
         action_xml = get_xml()
-    print(action_xml)
     try:
         xml_tree = ET.fromstring(action_xml)
     except:
@@ -182,4 +182,5 @@ def receive_connection(testing: bool, path: str):
             ses.commit()
     else:
         raise Exception("Got an XML that did not follow format")
-    print(results_xml)
+    if testing:
+        print(results_xml)
