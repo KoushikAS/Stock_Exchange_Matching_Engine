@@ -179,6 +179,7 @@ def receive_connection(testing: bool, path: str):
                 results_xml += cancel_order(ses, entry, account)
             elif entry.tag == 'query':
                 results_xml += query_order(ses, entry, account)
+                print("results: " + results_xml)
             else:
                 raise Exception("Malformatted xml in transaction")
             ses.commit()
