@@ -1,7 +1,5 @@
-import socket, time
-from random import randint 
+import socket
 import xml.etree.ElementTree as ET
-from sqlalchemy import select
 from models.order import OrderType, Order, OrderStatus
 from models.account import Account, account_exists
 from models.base import Session
@@ -10,10 +8,10 @@ from models.position import Position
 from models.executed_order import ExecutedOrder
 
 
-def get_test_xml():
+def get_test_xml(path: str) -> str:
     i = 0
     action_xml = ''
-    f = open("model_xml.txt", "r")
+    f = open(path, "r")
     for line in f:
         if i == 0:
             xml_size = int(line.strip())
@@ -22,7 +20,7 @@ def get_test_xml():
         i += 1
     return action_xml
 
-def get_xml():
+def get_xml() -> str:
     newline_rec = False
     buffer = ''
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -125,10 +123,10 @@ def query_order(session: Session, entry: ET.Element, account: Account) -> str:
     for e in executed:
         results += f"Executed {e.executed_amount} at {e.executed_price}, at {e.executed_time}\n"
 
-def receive_connection(testing: bool):
+def receive_connection(testing: bool, path: str):
     action_xml = ''
     if testing:
-        action_xml = get_test_xml()
+        action_xml = get_test_xml(path)
     else:
         action_xml = get_xml()
     print(action_xml)

@@ -57,7 +57,8 @@ if __name__ == "__main__":
     Base.metadata.create_all(engine)
     # while (True):
         # add the ability to schedule from a core pool here
-    receive_connection(True)
+    receive_connection(True, "model_xml.txt")
+    receive_connection(True, "model_xml_2.txt")
     session = Session()
     for e in session.query(Account).all():
         print("Account: " + str(e.id))
@@ -65,6 +66,8 @@ if __name__ == "__main__":
         print("Position: " + str(entry.id) + " : " + str(entry.account) + " : " + str(entry.amount))
     for en in session.query(Symbol).all():
         print("Symbol: " + str(en.name))
+    for en in session.query(Order).all():
+        print("Order: " + str(en.account) + " : " + str(en.symbol) + " : " + str(en.amount) + " : " + str(en.order_status))
         
 
     # sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()
