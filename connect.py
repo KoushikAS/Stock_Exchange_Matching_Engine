@@ -142,6 +142,7 @@ def receive_connection(testing: bool, path: str):
     root = minidom.Document()
     res = root.createElement('results')
     root.appendChild(res)
+    root.domConfig.setParameter('format-pretty-print', True)
 
     if xml_tree.tag == 'create':
         for entry in xml_tree:
@@ -187,4 +188,5 @@ def receive_connection(testing: bool, path: str):
     else:
         raise Exception("Got an XML that did not follow format")
     if testing:
-        print(root.toprettyxml(encoding="utf-8"))
+        root.toprettyxml(encoding="utf-8")
+        print(root.pxdomContent)
