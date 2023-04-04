@@ -77,7 +77,7 @@ def receive_connection():
                     account = e.attrib.get('id')
                     amt = int(e.text)
                     # TODO: Get matching account for ^, either add a position or add to position amt
-                    if session.query(Account).filer(Account.id==account).first() is None:
+                    if session.query(Account).filter(Account.id==account).first() is None:
                         print("account does not exists error")
                         # generate error xml piece
                     pos = session.query(Position).filter(Position.symbol==symbol, Position.account_id==account).first()
