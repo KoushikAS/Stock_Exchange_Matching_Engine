@@ -5,7 +5,8 @@ from sqlalchemy import select
 from models.order import OrderType, Order, OrderStatus
 from models.account import Account, account_exists
 from models.base import Session
-from models.symbol import Symbol
+from models.symbol import Symbol, create_symbol
+from models.position import Position
 
 
 def receive_connection():
@@ -64,16 +65,24 @@ def receive_connection():
                 # create a symbol for the given account
                 # error if the given account does not exist
                 sym = entry.attrib.get('sym')
+                print(sym)
+                if select(Symbol).where(Symbol.name == sym) == None:
+                    symbol = create_symbol(session, sym)
+                else:
+                    symbol = select(Symbol).where(Symbol.name == sym)
                 for e in entry:
                     account = e.attrib.get('id')
                     amt = int(e.text)
-                    print(sym)
-                    if select(Symbol).where(Symbol.name == sym) == None:
-                        pass
                     # TODO: Get matching account for ^, either add a position or add to position amt
-                    if select(Account).where(Account.id == account) != None:
-                        pass
-                pass
+                    if select(Account).where(Account.id == account) == None:
+                        print("account does not exists error")
+                        # generate error xml piece
+                    pos = select(Position).where(Position.symbol_id == symbol.id, Position.account_id == account)
+                    if pos != None:
+                        pos.amount += amt
+                    else:
+                        Position.__init__(Position, symbol, amt, select(Account).where(Account.id == account))
+                session.commit()
             else:
                 raise Exception("Malformatted xml in create")
         # Call a response function to generate the response xml and send on socket connected to 12345

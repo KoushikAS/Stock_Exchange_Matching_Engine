@@ -20,3 +20,5 @@ class Position(Base):
         self.symbol = symbol
         self.amount = amount
         self.account = account
+
+def create_position(session, symbol_id, amount, account)

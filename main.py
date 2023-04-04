@@ -60,6 +60,13 @@ if __name__ == "__main__":
     # while (True):
         # add the ability to schedule from a core pool here
     receive_connection()
+    session = Session()
+    for e in session.query(Account).all():
+        print(str(e.id))
+    for entry in session.query(Position).all():
+        print(str(entry.id) + " : " + str(entry.account) + " : " + str(entry.amount))
+    for en in session.query(Symbol).all():
+        print(str(en.name))
         
 
     # sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()
