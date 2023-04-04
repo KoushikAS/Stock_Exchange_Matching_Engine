@@ -106,15 +106,13 @@ def cancel_order(session: Session, entry: ET.Element, account: Account) -> str:
         return "error: tried to cancel a order that you do not own\n"
     
     order_to_cancel.order_status = OrderStatus.CLOSE
-    account.balance += float(order_to_cancel.amt) * float(order_to_cancel.limit)
+    account.balance += float(order_to_cancel.amount) * float(order_to_cancel.limit)
     # cancel any order that is open, refund the account, reply with canceled
 
 def query_order(session: Session, entry: ET.Element, account: Account) -> str:
     results = ''
     id = entry.attrib.get('id')
     order_to_query = session.query(Order).filter(Order.id==id).first()
-    print(account.id)
-    print(order_to_query.account.id)
     if order_to_query is None:
         print("tried to cancel an order that does not exist")
         return "error: tried to cancel an order that does not exist\n"
@@ -122,7 +120,6 @@ def query_order(session: Session, entry: ET.Element, account: Account) -> str:
         print("tried to cancel a order that you do not own")
         return "error: tried to cancel a order that you do not own\n"
     # get this order from the db
-    print(f"Order is OPEN with {order_to_query.amount} shares")
     results.join(f"Order is {order_to_query.order_status} with {order_to_query.amount} shares\n")
     executed = session.query(ExecutedOrder).filter(ExecutedOrder.order==order_to_query)
     for e in executed:
@@ -187,3 +184,4 @@ def receive_connection(testing: bool, path: str):
             ses.commit()
     else:
         raise Exception("Got an XML that did not follow format")
+    print(results_xml)
