@@ -17,9 +17,11 @@ def receive_connection():
         f = open("model_xml.txt", "r")
         for line in f:
             if i == 0:
+                print(line.strip())
                 xml_size = int(line.strip())
             else:
                 action_xml += line
+            i += 1
     else:
         newline_rec = False
         buffer = ''
