@@ -66,19 +66,19 @@ def receive_connection():
                 # error if the given account does not exist
                 sym = entry.attrib.get('sym')
                 print(sym)
-                if select(Symbol).where(Symbol.name == sym) == None:
+                if session.query(Symbol).filter(name=sym).one() == None:
                     symbol = create_symbol(session, sym)
                 else:
-                    symbol = select(Symbol).where(Symbol.name == sym)
+                    symbol = session.query(Symbol).filter(name=sym).one()
                 print(symbol)
                 for e in entry:
                     account = e.attrib.get('id')
                     amt = int(e.text)
                     # TODO: Get matching account for ^, either add a position or add to position amt
-                    if select(Account).where(Account.id == account) == None:
+                    if session.query(Account).filer(id=account).one() == None:
                         print("account does not exists error")
                         # generate error xml piece
-                    pos = select(Position).where(Position.symbol_id == symbol.id, Position.account_id == account)
+                    pos = session.query(Position).filter(symbol=symbol, account_id=account).one()
                     if pos != None:
                         pos.amount += amt
                     else:
