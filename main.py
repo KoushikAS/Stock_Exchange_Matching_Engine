@@ -67,7 +67,7 @@ if __name__ == "__main__":
     for en in session.query(Symbol).all():
         print("Symbol: " + str(en.name))
     for en in session.query(Order).all():
-        print("Order: " + str(en.account) + " : " + str(en.symbol) + " : " + str(en.amount) + " : " + str(en.order_status))
+        print("Order: " + str(en.id) + " : " + str(en.account) + " : " + str(en.symbol) + " : " + str(en.amount) + " : " + str(en.order_status))
         
 
     # sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()

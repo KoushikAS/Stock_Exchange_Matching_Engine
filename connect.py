@@ -75,8 +75,6 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol) -> str:
     return results
 
 def create_order(session: Session, entry: ET.Element, account: Account) -> str:
-    print(account)
-    print(account.id)
     sym = entry.attrib.get('sym')
     amt = float(entry.attrib.get('amount'))
     limit = float(entry.attrib.get('limit'))
