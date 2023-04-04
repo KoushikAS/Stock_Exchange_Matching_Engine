@@ -149,10 +149,10 @@ def receive_connection(testing: bool):
                 if session.query(Symbol).filter(Symbol.name==sym).first() is None:
                     newSymbol = Symbol(sym)
                     session.add(newSymbol)
-                symbol = session.query(Symbol).filter(Symbol.name==sym).one()
                 session.commit()
 
                 session2 = Session()
+                symbol = session2.query(Symbol).filter(Symbol.name==sym).one()
                 results_xml += create_position(session2, entry, symbol)
                 session2.commit()
             else:
