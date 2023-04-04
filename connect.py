@@ -84,7 +84,8 @@ def receive_connection():
                     if pos is not None:
                         pos.amount += amt
                     else:
-                        Position(symbol, amt, session.query(Account).filter(Account.id==account).one())
+                        newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account).one())
+                        session.add(newPosition)
                 session.commit()
             else:
                 raise Exception("Malformatted xml in create")
