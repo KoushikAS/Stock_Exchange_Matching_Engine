@@ -58,12 +58,11 @@ def create_account(session: Session, entry: ET.Element) -> str:
         # generate error xml piece
         return 'error\n'
 
-def add_to_accs(session: Session, entry: ET.Element, symbol: Symbol) -> str:
+def create_position(session: Session, entry: ET.Element, symbol: Symbol) -> str:
     results = ''
     for e in entry:
         account = e.attrib.get('id')
         amt = int(e.text)
-        # TODO: Get matching account for ^, either add a position or add to position amt
         if session.query(Account).filter(Account.id==account).first() is None:
             print("account does not exists error")
             results += 'account error\n'
@@ -154,7 +153,7 @@ def receive_connection(testing: bool):
                 session.commit()
 
                 session2 = Session()
-                results_xml += add_to_accs(session2, entry, symbol)
+                results_xml += create_position(session2, entry, symbol)
                 session2.commit()
             else:
                 raise Exception("Malformatted xml in create")
