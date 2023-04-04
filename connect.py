@@ -149,7 +149,6 @@ def receive_connection(testing: bool, path: str):
             if entry.tag == 'account':
                 create_account(session, entry, root, res)
                 # print(root.domConfig.setParameter('format-pretty-print', True))
-                print(root.toxml(encoding="utf-8"))
             elif entry.tag == 'symbol':
                 sym = entry.attrib.get('sym')
                 if session.query(Symbol).filter(Symbol.name==sym).first() is None:
@@ -188,4 +187,4 @@ def receive_connection(testing: bool, path: str):
     else:
         raise Exception("Got an XML that did not follow format")
     if testing:
-        print(results_xml)
+        print(root.toprettyxml(encoding="utf-8"))
