@@ -94,10 +94,9 @@ def create_order(session: Session, entry: ET.Element, account: Account) -> str:
     return 'success\n'
 
 def cancel_order(session: Session, entry: ET.Element, account: Account) -> str:
+    result = ''
     id = entry.attrib.get('id')
     order_to_cancel = session.query(Order).filter(Order.id==id).first()
-    print(account.id)
-    print(order_to_cancel.account.id)
     if order_to_cancel is None:
         print("tried to cancel an order that does not exist")
         return "error: tried to cancel an order that does not exist\n"
@@ -106,8 +105,9 @@ def cancel_order(session: Session, entry: ET.Element, account: Account) -> str:
         return "error: tried to cancel a order that you do not own\n"
     
     order_to_cancel.order_status = OrderStatus.CLOSE
-    account.balance += float(order_to_cancel.amount) * float(order_to_cancel.limit)
+    account.balance += float(order_to_cancel.amount) * float(order_to_cancel.limit_price)
     # cancel any order that is open, refund the account, reply with canceled
+    return f"Cancelled Order: {order_to_cancel.id} with {order_to_cancel.amount} shares and price: {order_to_cancel.limit_price}\n"
 
 def query_order(session: Session, entry: ET.Element, account: Account) -> str:
     results = ''
