@@ -59,17 +59,17 @@ def create_account(session: Session, entry: ET.Element) -> str:
 def create_position(session: Session, entry: ET.Element, symbol: Symbol) -> str:
     results = ''
     for e in entry:
-        account = e.attrib.get('id')
+        account_id = e.attrib.get('id')
         amt = int(e.text)
-        if session.query(Account).filter(Account.id==account).first() is None:
+        if session.query(Account).filter(Account.id==account_id).first() is None:
             print("account does not exists error")
             results += 'account error\n'
             continue
-        pos = session.query(Position).filter(Position.symbol==symbol, Position.account_id==account).first()
+        pos = session.query(Position).filter(Position.symbol==symbol, Position.account_id==account_id).first()
         if pos is not None:
             pos.amount += amt
         else:
-            newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account).one())
+            newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account_id).one())
             session.add(newPosition)
         results += "successfully added\n"
     return results
@@ -89,7 +89,7 @@ def create_order(session: Session, entry: ET.Element, account: Account) -> str:
     else:
         order_type = OrderType.BUY
     order_status = OrderStatus.OPEN
-    newOrder = Order(session.query(Account).filter(Account.id==account).one(), session.query(Symbol).filter(Symbol.name==sym).one(), amt, limit, order_type, order_status)
+    newOrder = Order(session.query(Account).filter(Account==account).one(), session.query(Symbol).filter(Symbol.name==sym).one(), amt, limit, order_type, order_status)
     session.add(newOrder)
     return 'success\n'
 
