@@ -148,7 +148,7 @@ def receive_connection(testing: bool, path: str):
             session = Session()
             if entry.tag == 'account':
                 create_account(session, entry, root, res)
-                print(root.toprettyxml(indent='\t'))
+                print(root.toprettyxml(encoding="utf-8").domConfig.setParameter('format-pretty-print', True))
             elif entry.tag == 'symbol':
                 sym = entry.attrib.get('sym')
                 if session.query(Symbol).filter(Symbol.name==sym).first() is None:
