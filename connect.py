@@ -76,9 +76,9 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol) -> str:
 
 def create_order(session: Session, entry: ET.Element, account: Account) -> str:
     sym = entry.attrib.get('sym')
-    amt = entry.attrib.get('amount')
-    limit = entry.attrib.get('limit')
-    cost = float(amt) * float(limit)
+    amt = float(entry.attrib.get('amount'))
+    limit = float(entry.attrib.get('limit'))
+    cost = amt * limit
     if account.balance < cost:
         # reject the request
         return "order fail due to insufficient funds\n"
