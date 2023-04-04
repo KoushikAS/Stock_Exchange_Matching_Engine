@@ -70,6 +70,7 @@ def receive_connection():
                     symbol = create_symbol(session, sym)
                 else:
                     symbol = select(Symbol).where(Symbol.name == sym)
+                print(symbol)
                 for e in entry:
                     account = e.attrib.get('id')
                     amt = int(e.text)
