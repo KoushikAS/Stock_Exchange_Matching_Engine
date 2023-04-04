@@ -66,8 +66,10 @@ def receive_connection():
                 # create a symbol for the given account
                 # error if the given account does not exist
                 sym = entry.attrib.get('sym')
-                print(session.query(Symbol).filter(Symbol.name==sym))
-                if session.query(Symbol).filter(Symbol.name==sym).first() is not None:
+                fr = session.query(Symbol).filter(Symbol.name==sym).first()
+                print(fr)
+                if fr is not None:
+                    print("in the if")
                     symbol = create_symbol(session, sym)
                     session.commit()
 
