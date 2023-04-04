@@ -187,4 +187,4 @@ def receive_connection(testing: bool, path: str):
     else:
         raise Exception("Got an XML that did not follow format")
     if testing:
-        print(str(root.toprettyxml(encoding="utf-8")))
+        print(root.toprettyxml(encoding="utf-8").decode())
