@@ -142,13 +142,14 @@ def receive_connection(testing: bool, path: str):
     root = minidom.Document()
     res = root.createElement('results')
     root.appendChild(res)
+    root.writexml(encoding="utf-8")
 
     if xml_tree.tag == 'create':
         for entry in xml_tree:
             session = Session()
             if entry.tag == 'account':
                 create_account(session, entry, root, res)
-                print(root.toprettyxml(encoding="utf-8").domConfig.setParameter('format-pretty-print', True))
+                print(root.domConfig.setParameter('format-pretty-print', True))
             elif entry.tag == 'symbol':
                 sym = entry.attrib.get('sym')
                 if session.query(Symbol).filter(Symbol.name==sym).first() is None:
