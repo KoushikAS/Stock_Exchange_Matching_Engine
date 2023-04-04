@@ -129,6 +129,7 @@ def query_order(session: Session, entry: ET.Element, account: Account) -> str:
         results.join(f"Order is CLOSED with {order_to_query.amount} shares\n")
     executed = session.query(ExecutedOrder).filter(ExecutedOrder.order==order_to_query)
     for e in executed:
+        print(e)
         results.join(f"Executed {e.executed_amount} at {e.executed_price}, at {e.executed_time}\n")
 
 def receive_connection(testing: bool, path: str):
