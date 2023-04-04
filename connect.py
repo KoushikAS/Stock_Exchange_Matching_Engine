@@ -78,7 +78,7 @@ def create_order(session: Session, entry: ET.Element, account: Account) -> str:
     sym = entry.attrib.get('sym')
     amt = entry.attrib.get('amount')
     limit = entry.attrib.get('limit')
-    cost = amt * limit
+    cost = int(amt) * int(limit)
     if account.balance < cost:
         # reject the request
         return "order fail due to insufficient funds\n"
@@ -104,7 +104,7 @@ def cancel_order(session: Session, entry: ET.Element, account: Account) -> str:
         return "error: tried to cancel a order that you do not own\n"
     
     order_to_cancel.order_status = OrderStatus.CLOSE
-    account.balance += order_to_cancel.amt * order_to_cancel.limit
+    account.balance += int(order_to_cancel.amt) * int(order_to_cancel.limit)
     # cancel any order that is open, refund the account, reply with canceled
 
 def query_order(session: Session, entry: ET.Element, account: Account) -> str:
