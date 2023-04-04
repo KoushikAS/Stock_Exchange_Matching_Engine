@@ -123,7 +123,7 @@ def query_order(session: Session, entry: ET.Element, account: Account) -> str:
         return "error: tried to cancel a order that you do not own\n"
     # get this order from the db
     print(f"Order is {order_to_query.order_status} with {order_to_query.amount} shares\n")
-    results.join(f"Order is {order_to_query.order_status} with {order_to_query.amount} shares\n")
+    results.join(f"Order is {str(order_to_query.order_status)} with {order_to_query.amount} shares\n")
     executed = session.query(ExecutedOrder).filter(ExecutedOrder.order==order_to_query)
     for e in executed:
         results.join(f"Executed {e.executed_amount} at {e.executed_price}, at {e.executed_time}\n")
