@@ -70,13 +70,20 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
             xml_result.appendChild(text)
             res.appendChild(xml_result)
             continue
+
+        # sanity check
+        i = 0
+        for item in session.query(Position).filter_by(symbol=symbol, account_id=account_id):
+            i = i + 1
+        
+        if i > 1:
+            print("Something has gone very wrong, and multiple positions exist for the same sym and account combo")
         
         if session.query(Position).filter_by(symbol=symbol, account_id=account_id).first() is not None:
-            print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ in if")
+            # possibly check if there are more than one of this sym and account_id combo (should not be possible)
             session.query(Position).filter_by(symbol=symbol, account_id=account_id).update({"amount": Position.amount + amt})
         else:
         # can there be concurrency issues if multiple requests try to create the same position for an account at the same time?
-            print("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW in else")
             newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account_id).one())
             session.add(newPosition)
         xml_result = root.createElement('created')
