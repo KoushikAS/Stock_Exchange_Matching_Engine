@@ -25,7 +25,7 @@ def get_xml() -> str:
     buffer = ''
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # socket.setblocking(0)
-    client_socket.bind(('localhost', 12345))
+    client_socket.bind(("0.0.0.0", 12345))
     client_socket.listen(5)
     c, addr = client_socket.accept()
     print ("connection accepted")
