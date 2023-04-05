@@ -65,7 +65,9 @@ if __name__ == "__main__":
     receive_connection(True, "model_xml_3.txt")
     session = Session()
     for e in session.query(Account).all():
-        print("Account: " + str(e.id))
+        print("Account: " + str(e.id) + " : " + str(e.balance))
+        print(e.positions)
+        print("_________________________")
     for entry in session.query(Position).all():
         print("Position: " + str(entry.id) + " : " + str(entry.account) + " : " + str(entry.amount))
     for en in session.query(Symbol).all():

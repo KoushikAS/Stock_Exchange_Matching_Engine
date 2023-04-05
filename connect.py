@@ -41,7 +41,7 @@ def get_xml() -> str:
     action_xml = c.recv(xml_size)
     return action_xml
 
-def create_account(session: Session, entry: ET.Element, root: minidom.Document, res: minidom.Document):
+def create_account(session: Session, entry: ET.Element, root: minidom.Document, res: minidom.Document) -> None:
     # can there be concurrency issues if multiple requests try to create the same account at the same time?
     id = entry.attrib.get('id')
     balance = entry.attrib.get('balance')
@@ -58,7 +58,7 @@ def create_account(session: Session, entry: ET.Element, root: minidom.Document, 
         xml_result.appendChild(text)
     res.appendChild(xml_result)
 
-def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: minidom.Document, res: minidom.Document):
+def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: minidom.Document, res: minidom.Document) -> None:
     for e in entry:
         account_id = e.attrib.get('id')
         amt = int(e.text)
@@ -88,14 +88,22 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
         xml_result.setAttribute('id', account_id)
         res.appendChild(xml_result)
 
-def create_order(session: Session, entry: ET.Element, account: Account) -> str:
+def create_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
     sym = entry.attrib.get('sym')
     amt = float(entry.attrib.get('amount'))
     limit = float(entry.attrib.get('limit'))
     cost = amt * limit
     if account.balance < cost:
         # reject the request
-        return "order fail due to insufficient funds\n"
+        xml_result = root.createElement('error')
+        xml_result.setAttribute('sym', sym)
+        xml_result.setAttribute('amount', amt)
+        xml_result.setAttribute('limit', limit)
+        text = root.createTextNode('Insufficient funds in account')
+        xml_result.appendChild(text)
+        res.appendChild(xml_result)
+        return
+
     account.balance = account.balance - cost # check that works for sell orders
     order_type = None
     if amt < 0:
@@ -103,11 +111,20 @@ def create_order(session: Session, entry: ET.Element, account: Account) -> str:
     else:
         order_type = OrderType.BUY
     order_status = OrderStatus.OPEN
+    # add a check that the symbol exists that you are trying to create an order for, create it if not
+    # check if this account has some of the symbol in its positions actually???
+    # check that the amount to sell is < amount owned
     newOrder = Order(session.query(Account).filter(Account.id==account.id).scalar(), session.query(Symbol).filter(Symbol.name==sym).scalar(), amt, limit, order_type, order_status)
     session.add(newOrder)
-    return 'success\n'
+    xml_result = root.createElement('opened')
+    xml_result.setAttribute('id', newOrder.id)
+    xml_result.setAttribute('sym', sym)
+    xml_result.setAttribute('amount', amt)
+    xml_result.setAttribute('limit', limit)
+    xml_result.appendChild(text)
+    res.appendChild(xml_result)
 
-def cancel_order(session: Session, entry: ET.Element, account: Account) -> str:
+def cancel_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
     result = ''
     id = entry.attrib.get('id')
     order_to_cancel = session.query(Order).filter(Order.id==id).first()
@@ -123,7 +140,7 @@ def cancel_order(session: Session, entry: ET.Element, account: Account) -> str:
     # cancel any order that is open, refund the account, reply with canceled
     return f"Cancelled Order: {order_to_cancel.id} with {order_to_cancel.amount} shares and price: {order_to_cancel.limit_price}\n"
 
-def query_order(session: Session, entry: ET.Element, account: Account) -> str:
+def query_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
     results = ''
     id = entry.attrib.get('id')
     order_to_query = session.query(Order).filter(Order.id==id).first()
@@ -199,17 +216,18 @@ def receive_connection(testing: bool, path: str):
         if account is None:
             print("account does not exists error")
             # generate error xml piece
+            # need to figure out how to generate an error for each child here
             results_xml += "account error on transactions"
         session.commit()
         for entry in xml_tree:
             ses = Session()
             account = ses.query(Account).filter(Account.id==account_id).with_for_update().scalar()
             if entry.tag == 'order':
-                results_xml += create_order(ses, entry, account)
+                create_order(ses, entry, account, root, res)
             elif entry.tag == 'cancel':
-                results_xml += cancel_order(ses, entry, account)
+                cancel_order(ses, entry, account, root, res)
             elif entry.tag == 'query':
-                results_xml += query_order(ses, entry, account)
+                query_order(ses, entry, account, root, res)
             else:
                 raise Exception("Malformatted xml in transaction")
             ses.commit()
