@@ -78,7 +78,7 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
             res.appendChild(xml_result)
             continue
 
-        print(len(session.query(Position).filter_by(symbol=symbol, account_id=account_id)))
+        print(session.query(Position).filter_by(symbol=symbol, account_id=account_id).count())
         print(count_ret(session.query(Position).filter_by(symbol=symbol, account_id=account_id)))
         
         if count_ret(session.query(Position).filter_by(symbol=symbol, account_id=account_id)) > 1:

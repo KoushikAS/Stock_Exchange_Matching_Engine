@@ -64,7 +64,6 @@ if __name__ == "__main__":
     receive_connection(True, "model_xml_2.txt")
     receive_connection(True, "model_xml_3.txt")
     session = Session()
-    print(len(session.query(Account)))
     for e in session.query(Account).all():
         print("Account: " + str(e.id))
     for entry in session.query(Position).all():
