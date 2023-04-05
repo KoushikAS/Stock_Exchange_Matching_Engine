@@ -62,12 +62,17 @@ if __name__ == "__main__":
     # receive_connection(False, None)
     receive_connection(True, "model_xml.txt")
     receive_connection(True, "model_xml_2.txt")
+    s = Session()
+    for e in s.query(Account).all():
+        print("Account: " + str(e.id) + " : " + str(e.balance))
+    s.commit()
     receive_connection(True, "model_xml_3.txt")
+    receive_connection(True, "model_xml_4.txt")
     session = Session()
     for e in session.query(Account).all():
         print("Account: " + str(e.id) + " : " + str(e.balance))
-        print(e.positions)
-        print("_________________________")
+        # print(e.positions)
+        # print("_________________________")
     for entry in session.query(Position).all():
         print("Position: " + str(entry.id) + " : " + str(entry.account) + " : " + str(entry.amount))
     for en in session.query(Symbol).all():
