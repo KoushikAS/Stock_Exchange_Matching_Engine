@@ -64,7 +64,7 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
         amt = int(e.text)
         if session.query(Account).filter(Account.id==account_id).first() is None:
             xml_result = root.createElement('error')
-            xml_result.setAttribute('sym', symbol)
+            xml_result.setAttribute('sym', symbol.name)
             xml_result.setAttribute('id', account_id)
             text = root.createTextNode('Account for position does not exists')
             xml_result.appendChild(text)
@@ -77,7 +77,7 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
             newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account_id).one())
             session.add(newPosition)
         xml_result = root.createElement('created')
-        xml_result.setAttribute('sym', symbol)
+        xml_result.setAttribute('sym', symbol.name)
         xml_result.setAttribute('id', account_id)
         res.appendChild(xml_result)
 
@@ -181,9 +181,7 @@ def receive_connection(testing: bool, path: str):
                 session2 = Session()
                 # should it be checked here if only one symbol exists with that name?
                 symbol = session2.query(Symbol).filter(Symbol.name==sym).one()
-                print(root.toprettyxml(encoding="utf-8").decode())
                 create_position(session2, entry, symbol, root, res)
-                print(root.toprettyxml(encoding="utf-8").decode())
                 session2.commit()
             else:
                 raise Exception("Malformatted xml in create")
