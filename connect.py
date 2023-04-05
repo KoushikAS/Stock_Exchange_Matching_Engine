@@ -71,7 +71,7 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
             res.appendChild(xml_result)
             continue
         
-        if session.query(Position).filter_by(symbol=symbol, account_id=account_id) is not None:
+        if session.query(Position).filter_by(symbol=symbol, account_id=account_id).first() is not None:
             print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ in if")
             session.query(Position).filter_by(symbol=symbol, account_id=account_id).update({"amount": Position.amount + amt})
         else:
