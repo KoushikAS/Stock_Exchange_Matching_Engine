@@ -71,12 +71,10 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
             res.appendChild(xml_result)
             continue
         
-        try:
-            print("adding to existing position")
+        if session.query(Position).filter_by(symbol=symbol, account_id=account_id) is not None:
             session.query(Position).filter_by(symbol=symbol, account_id=account_id).update({"amount": Position.amount + amt})
-        except:
+        else:
         # can there be concurrency issues if multiple requests try to create the same position for an account at the same time?
-            print("creating a new position")
             newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account_id).one())
             session.add(newPosition)
         xml_result = root.createElement('created')
