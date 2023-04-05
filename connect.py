@@ -179,7 +179,9 @@ def receive_connection(testing: bool, path: str):
                 session2 = Session()
                 # should it be checked here if only one symbol exists with that name?
                 symbol = session2.query(Symbol).filter(Symbol.name==sym).one()
+                print(root.toprettyxml(encoding="utf-8").decode())
                 create_position(session2, entry, symbol, root, res)
+                print(root.toprettyxml(encoding="utf-8").decode())
                 session2.commit()
             else:
                 raise Exception("Malformatted xml in create")
