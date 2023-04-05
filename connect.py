@@ -116,6 +116,7 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
     # check that the amount to sell is < amount owned
     newOrder = Order(session.query(Account).filter(Account.id==account.id).scalar(), session.query(Symbol).filter(Symbol.name==sym).scalar(), amt, limit, order_type, order_status)
     session.add(newOrder)
+    session.commit()
     xml_result = root.createElement('opened')
     xml_result.setAttribute('id', newOrder.id)
     xml_result.setAttribute('sym', sym)
@@ -225,11 +226,12 @@ def receive_connection(testing: bool, path: str):
                 create_order(ses, entry, account, root, res)
             elif entry.tag == 'cancel':
                 cancel_order(ses, entry, account, root, res)
+                ses.commit()
             elif entry.tag == 'query':
                 query_order(ses, entry, account, root, res)
+                ses.commit()
             else:
                 raise Exception("Malformatted xml in transaction")
-            ses.commit()
     else:
         raise Exception("Got an XML that did not follow format")
     if testing:
