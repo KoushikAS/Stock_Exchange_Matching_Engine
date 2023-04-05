@@ -41,6 +41,7 @@ def get_xml() -> str:
     return action_xml
 
 def create_account(session: Session, entry: ET.Element, root: minidom.Document, res: minidom.Document):
+    # can there be concurrency issues if multiple requests try to create the same account at the same time?
     id = entry.attrib.get('id')
     balance = entry.attrib.get('balance')
     if not account_exists(session, id):
@@ -56,23 +57,28 @@ def create_account(session: Session, entry: ET.Element, root: minidom.Document, 
         xml_result.appendChild(text)
     res.appendChild(xml_result)
 
-def create_position(session: Session, entry: ET.Element, symbol: Symbol) -> str:
-    results = ''
+def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: minidom.Document, res: minidom.Document):
     for e in entry:
         account_id = e.attrib.get('id')
         amt = int(e.text)
         if session.query(Account).filter(Account.id==account_id).first() is None:
-            print("account does not exists error")
-            results += 'account error\n'
+            xml_result = root.createElement('error')
+            xml_result.setAttribute('sym', symbol)
+            xml_result.setAttribute('id', account_id)
+            text = root.createTextNode('Account for position does not exists')
+            xml_result.appendChild(text)
             continue
-        pos = session.query(Position).filter(Position.symbol==symbol, Position.account_id==account_id).first()
-        if pos is not None:
-            pos.amount += amt
-        else:
+        
+        try:
+            session.query(Position).filter_by(symbol=symbol, account_id=account_id).update({"amount": Position.amount + amt})
+        except:
+        # can there be concurrency issues if multiple requests try to create the same position for an account at the same time?
             newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account_id).one())
             session.add(newPosition)
-        results += f"successfully added a new position for account {account_id}\n"
-    return results
+        xml_result = root.createElement('created')
+        xml_result.setAttribute('sym', symbol)
+        xml_result.setAttribute('id', account_id)
+        res.appendChild(xml_result)
 
 def create_order(session: Session, entry: ET.Element, account: Account) -> str:
     sym = entry.attrib.get('sym')
@@ -147,18 +153,33 @@ def receive_connection(testing: bool, path: str):
         for entry in xml_tree:
             session = Session()
             if entry.tag == 'account':
-                create_account(session, entry, root, res)
-                # print(root.domConfig.setParameter('format-pretty-print', True))
+                try:
+                    create_account(session, entry, root, res)
+                except:
+                    xml_result = root.createElement('error')
+                    xml_result.setAttribute('id', id)
+                    text = root.createTextNode('Account already exists')
+                    xml_result.appendChild(text)
+                    res.appendChild(xml_result)
+
             elif entry.tag == 'symbol':
                 sym = entry.attrib.get('sym')
                 if session.query(Symbol).filter(Symbol.name==sym).first() is None:
                     newSymbol = Symbol(sym)
                     session.add(newSymbol)
-                session.commit()
+                    # xml_child = root.createElement('created')
+                    # xml_child.setAttribute('id', id)
+                    # res.appendChild(xml_child)
+                try:
+                    session.commit()
+                except:
+                    print("Symbol was created during the creation of the same symbol (!should never happen!)")
+                    pass
 
                 session2 = Session()
+                # should it be checked here if only one symbol exists with that name?
                 symbol = session2.query(Symbol).filter(Symbol.name==sym).one()
-                results_xml += create_position(session2, entry, symbol)
+                create_position(session2, entry, symbol, root, res)
                 session2.commit()
             else:
                 raise Exception("Malformatted xml in create")
