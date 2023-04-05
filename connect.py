@@ -68,12 +68,15 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
             xml_result.setAttribute('id', account_id)
             text = root.createTextNode('Account for position does not exists')
             xml_result.appendChild(text)
+            res.appendChild(xml_result)
             continue
         
         try:
+            print("adding to existing position")
             session.query(Position).filter_by(symbol=symbol, account_id=account_id).update({"amount": Position.amount + amt})
         except:
         # can there be concurrency issues if multiple requests try to create the same position for an account at the same time?
+            print("creating a new position")
             newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account_id).one())
             session.add(newPosition)
         xml_result = root.createElement('created')
@@ -185,8 +188,6 @@ def receive_connection(testing: bool, path: str):
                 session2.commit()
             else:
                 raise Exception("Malformatted xml in create")
-        # Call a response function to generate the response xml and send on socket connected to 12345
-        # returns either an error xml or results xml for each transaction
     elif xml_tree.tag == 'transactions':
         session = Session()
         account_id = xml_tree.attrib.get('id')
