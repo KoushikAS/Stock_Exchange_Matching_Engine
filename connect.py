@@ -125,31 +125,49 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
     res.appendChild(xml_result)
 
 def cancel_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
-    result = ''
     id = entry.attrib.get('id')
-    order_to_cancel = session.query(Order).filter(Order.id==id).first()
+    order_to_cancel = session.query(Order).filter(Order.id==id).with_for_update().scalar()
     if order_to_cancel is None:
-        print("tried to cancel an order that does not exist")
-        return "error: tried to cancel an order that does not exist\n"
+        xml_result = root.createElement('error')
+        xml_result.setAttribute('id', id)
+        text = root.createTextNode('Order to cancel does not exist')
+        xml_result.appendChild(text)
+        res.appendChild(xml_result)
+        return
     if account.id != order_to_cancel.account.id:
-        print("tried to cancel a order that you do not own")
-        return "error: tried to cancel a order that you do not own\n"
+        xml_result = root.createElement('error')
+        xml_result.setAttribute('id', id)
+        text = root.createTextNode('Attempted to cancel an order account given does not own, not allowed')
+        xml_result.appendChild(text)
+        res.appendChild(xml_result)
+        return
     
     order_to_cancel.order_status = OrderStatus.CLOSE
-    account.balance += float(order_to_cancel.amount) * float(order_to_cancel.limit_price)
+    account.balance = account.balance + (float(order_to_cancel.amount) * float(order_to_cancel.limit_price))
     # cancel any order that is open, refund the account, reply with canceled
-    return f"Cancelled Order: {order_to_cancel.id} with {order_to_cancel.amount} shares and price: {order_to_cancel.limit_price}\n"
+    session.commit()
+    xml_result = root.createElement('canceled')
+    xml_result.setAttribute('id', id)
+    res.appendChild(xml_result)
 
 def query_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
     results = ''
     id = entry.attrib.get('id')
     order_to_query = session.query(Order).filter(Order.id==id).first()
     if order_to_query is None:
-        print("tried to cancel an order that does not exist")
-        return "error: tried to cancel an order that does not exist\n"
+        xml_result = root.createElement('error')
+        xml_result.setAttribute('id', id)
+        text = root.createTextNode('Order to query does not exist')
+        xml_result.appendChild(text)
+        res.appendChild(xml_result)
+        return
     if account.id != order_to_query.account.id:
-        print("tried to cancel a order that you do not own")
-        return "error: tried to cancel a order that you do not own\n"
+        xml_result = root.createElement('error')
+        xml_result.setAttribute('id', id)
+        text = root.createTextNode('Attempted to query an order account given does not own, not allowed')
+        xml_result.appendChild(text)
+        res.appendChild(xml_result)
+        return
     # get this order from the db
     results += f"Order is {order_to_query.order_status} with {order_to_query.amount} shares\n"
     executed = session.query(ExecutedOrder).filter(ExecutedOrder.order==order_to_query)
@@ -226,7 +244,6 @@ def receive_connection(testing: bool, path: str):
                 create_order(ses, entry, account, root, res)
             elif entry.tag == 'cancel':
                 cancel_order(ses, entry, account, root, res)
-                ses.commit()
             elif entry.tag == 'query':
                 query_order(ses, entry, account, root, res)
                 ses.commit()
