@@ -62,7 +62,7 @@ if __name__ == "__main__":
     # receive_connection(False, None)
     receive_connection(True, "model_xml.txt")
     receive_connection(True, "model_xml_2.txt")
-    receive_connection(True, "model_xml.txt")
+    receive_connection(True, "model_xml_3.txt")
     session = Session()
     for e in session.query(Account).all():
         print("Account: " + str(e.id))
