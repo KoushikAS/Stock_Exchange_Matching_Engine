@@ -126,7 +126,7 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
 
 def cancel_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
     id = entry.attrib.get('id')
-    order_to_cancel = session.query(Order).filter(Order.id==id).with_for_update().scalar()
+    order_to_cancel = session.query(Order).filter_by(id=id, order_status=OrderStatus.OPEN).with_for_update().scalar()
     if order_to_cancel is None:
         xml_result = root.createElement('error')
         xml_result.setAttribute('id', id)
@@ -153,7 +153,7 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
 def query_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
     results = ''
     id = entry.attrib.get('id')
-    order_to_query = session.query(Order).filter(Order.id==id).first()
+    order_to_query = session.query(Order).filter_by(id=id, order_status=OrderStatus.OPEN).first()
     if order_to_query is None:
         xml_result = root.createElement('error')
         xml_result.setAttribute('id', id)
