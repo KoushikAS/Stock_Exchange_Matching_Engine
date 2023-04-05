@@ -41,13 +41,6 @@ def get_xml() -> str:
     action_xml = c.recv(xml_size)
     return action_xml
 
-def count_ret(query) -> int:
-    # sanity check
-    i = 0
-    for item in query:
-        i = i + 1
-    return i
-
 def create_account(session: Session, entry: ET.Element, root: minidom.Document, res: minidom.Document):
     # can there be concurrency issues if multiple requests try to create the same account at the same time?
     id = entry.attrib.get('id')
@@ -77,11 +70,9 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
             xml_result.appendChild(text)
             res.appendChild(xml_result)
             continue
-
-        print(session.query(Position).filter_by(symbol=symbol, account_id=account_id).count())
-        print(count_ret(session.query(Position).filter_by(symbol=symbol, account_id=account_id)))
         
-        if count_ret(session.query(Position).filter_by(symbol=symbol, account_id=account_id)) > 1:
+        # sanity check
+        if session.query(Position).filter_by(symbol=symbol, account_id=account_id).count() > 1:
             print("Something has gone very wrong, and multiple positions exist for the same sym and account combo")
             raise Exception("Something has gone very wrong, and multiple positions exist for the same sym and account combo")
         
@@ -90,7 +81,7 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
             session.query(Position).filter_by(symbol=symbol, account_id=account_id).update({"amount": Position.amount + amt})
         else:
         # can there be concurrency issues if multiple requests try to create the same position for an account at the same time?
-            newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account_id).one())
+            newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account_id).scalar())
             session.add(newPosition)
         xml_result = root.createElement('created')
         xml_result.setAttribute('sym', symbol.name)
@@ -112,7 +103,7 @@ def create_order(session: Session, entry: ET.Element, account: Account) -> str:
     else:
         order_type = OrderType.BUY
     order_status = OrderStatus.OPEN
-    newOrder = Order(session.query(Account).filter(Account.id==account.id).one(), session.query(Symbol).filter(Symbol.name==sym).one(), amt, limit, order_type, order_status)
+    newOrder = Order(session.query(Account).filter(Account.id==account.id).scalar(), session.query(Symbol).filter(Symbol.name==sym).scalar(), amt, limit, order_type, order_status)
     session.add(newOrder)
     return 'success\n'
 
@@ -196,7 +187,7 @@ def receive_connection(testing: bool, path: str):
 
                 session2 = Session()
                 # should it be checked here if only one symbol exists with that name?
-                symbol = session2.query(Symbol).filter(Symbol.name==sym).one()
+                symbol = session2.query(Symbol).filter(Symbol.name==sym).scalar()
                 create_position(session2, entry, symbol, root, res)
                 session2.commit()
             else:
@@ -204,7 +195,7 @@ def receive_connection(testing: bool, path: str):
     elif xml_tree.tag == 'transactions':
         session = Session()
         account_id = xml_tree.attrib.get('id')
-        account = session.query(Account).filter(Account.id==account_id).first()
+        account = session.query(Account).filter(Account.id==account_id).scalar()
         if account is None:
             print("account does not exists error")
             # generate error xml piece
@@ -212,7 +203,7 @@ def receive_connection(testing: bool, path: str):
         session.commit()
         for entry in xml_tree:
             ses = Session()
-            account = ses.query(Account).filter(Account.id==account_id).with_for_update().first()
+            account = ses.query(Account).filter(Account.id==account_id).with_for_update().scalar()
             if entry.tag == 'order':
                 results_xml += create_order(ses, entry, account)
             elif entry.tag == 'cancel':
