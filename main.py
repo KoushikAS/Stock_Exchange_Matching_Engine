@@ -57,8 +57,9 @@ if __name__ == "__main__":
     Base.metadata.create_all(engine)
     # while (True):
         # add the ability to schedule from a core pool here
-    receive_connection(True, "model_xml.txt")
-    receive_connection(True, "model_xml_2.txt")
+    # receive_connection(True, "test/resource/accountcreation-input.txt")
+    # receive_connection(True, "test/resource/buyscript-input.txt")
+    receive_connection(False, None)
     session = Session()
     for e in session.query(Account).all():
         print("Account: " + str(e.id))

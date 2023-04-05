@@ -1,16 +1,15 @@
 version: '2'
-
 services:
   db:
-      image: postgres
-      environment:
-        - POSTGRES_DB=postgres
-        - POSTGRES_USER=postgres
-        - POSTGRES_PASSWORD=postgres
-      ports:
-        - "5432:5432"
-      volumes:
-            - data-volume:/var/lib/postgresql/data
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - 'data-volume:/var/lib/postgresql/data'
   pgadmin:
     image: dpage/pgadmin4
     restart: always
@@ -18,17 +17,17 @@ services:
       PGADMIN_DEFAULT_EMAIL: 568@duke.edu
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
-      - "5050:80"
+      - '5050:80'
     depends_on:
       - db
   server:
-      build: .
-      command: python3 main.py
-      volumes:
-        - .:/code
-      ports:
-        - "12345:12345"
-      depends_on:
-        - db
+    build: .
+    command: python3 main.py
+    volumes:
+      - '.:/code'
+    ports:
+      - '12345:12345'
+    depends_on:
+      - db
 volumes:
-   data-volume:
+  data-volume: null
