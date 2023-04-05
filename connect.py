@@ -78,6 +78,7 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
         
         if i > 1:
             print("Something has gone very wrong, and multiple positions exist for the same sym and account combo")
+            raise Exception("Something has gone very wrong, and multiple positions exist for the same sym and account combo")
         
         if session.query(Position).filter_by(symbol=symbol, account_id=account_id).first() is not None:
             # possibly check if there are more than one of this sym and account_id combo (should not be possible)
