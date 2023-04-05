@@ -119,8 +119,8 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
     xml_result = root.createElement('opened')
     xml_result.setAttribute('id', newOrder.id)
     xml_result.setAttribute('sym', sym)
-    xml_result.setAttribute('amount', amt)
-    xml_result.setAttribute('limit', limit)
+    xml_result.setAttribute('amount', str(amt))
+    xml_result.setAttribute('limit', str(limit))
     res.appendChild(xml_result)
 
 def cancel_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
