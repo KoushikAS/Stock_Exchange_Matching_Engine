@@ -121,7 +121,6 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
     xml_result.setAttribute('sym', sym)
     xml_result.setAttribute('amount', amt)
     xml_result.setAttribute('limit', limit)
-    xml_result.appendChild(text)
     res.appendChild(xml_result)
 
 def cancel_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
