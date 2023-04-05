@@ -1,0 +1,5 @@
+<results>
+ <created id="1"/>
+ <created sym="SPY" id="1"/>
+ <created id="2"/>
+<results>

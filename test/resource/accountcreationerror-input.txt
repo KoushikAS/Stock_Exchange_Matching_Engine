@@ -1,0 +1,6 @@
+175
+<?xml version="1.0" encoding="UTF-8"?>
+<create>
+ <account id="1" balance="1000"/>
+ <account id="2" balance="1000"/>
+</create>
