@@ -1,0 +1,3 @@
+<results>
+ <error sym="SPY" amount="5" limit="2">Invalid TRANS_ID</error>
+</results>

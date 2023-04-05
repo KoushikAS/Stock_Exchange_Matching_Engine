@@ -1,0 +1,3 @@
+<results>
+ <error sym="SPY" amount="-10" limit="5">Insufficent Funds</error>
+</results>

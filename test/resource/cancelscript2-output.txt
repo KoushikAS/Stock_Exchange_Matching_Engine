@@ -1,0 +1,6 @@
+<results>
+ <canceled id="1">
+    <canceled shares="5"/>
+    <executed shares="5" price="6"/>
+ </status>
+</results>
