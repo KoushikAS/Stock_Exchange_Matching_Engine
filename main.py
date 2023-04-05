@@ -1,9 +1,9 @@
-from models.base import Session, engine, Base
+from models.base import engine, Base, Session
 from models.account import Account
 from models.symbol import Symbol
 from models.position import Position
 from models.order import OrderType, Order, OrderStatus
-from sqlalchemy import select
+from connect import receive_connection
 
 
 def getOpenOrder(session, sym, order_type, orderBy):
@@ -53,13 +53,26 @@ def matchOrder(session, sym):
 
         session.commit()
 
+if __name__ == "__main__":
+    Base.metadata.create_all(engine)
+    # while (True):
+        # add the ability to schedule from a core pool here
+    receive_connection(True, "model_xml.txt")
+    receive_connection(True, "model_xml_2.txt")
+    session = Session()
+    for e in session.query(Account).all():
+        print("Account: " + str(e.id))
+    for entry in session.query(Position).all():
+        print("Position: " + str(entry.id) + " : " + str(entry.account) + " : " + str(entry.amount))
+    for en in session.query(Symbol).all():
+        print("Symbol: " + str(en.name))
+    for en in session.query(Order).all():
+        print("Order: " + str(en.id) + " : " + str(en.account) + " : " + str(en.symbol) + " : " + str(en.amount) + " : " + str(en.order_status))
+        
 
-Base.metadata.create_all(engine)
-session = Session()
+    # sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()
 
-sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()
-
-matchOrder(session, sym1[0])
+    # matchOrder(session, sym1[0])
 
 '''
 sym1 = Symbol("SPY")
