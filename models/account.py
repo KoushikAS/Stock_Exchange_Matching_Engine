@@ -15,3 +15,8 @@ class Account(Base):
     def __init__(self, id, balance):
         self.id = id
         self.balance = balance
+    
+def account_exists(session, id):
+    if session.query(session.query(Account).filter_by(id=id).exists()).scalar():
+        return True
+    return False

@@ -20,3 +20,4 @@ class Position(Base):
         self.symbol = symbol
         self.amount = amount
         self.account = account
+

@@ -2,7 +2,6 @@ from sqlalchemy import Column, String, Integer
 
 from models.base import Base
 
-
 class Symbol(Base):
     __tablename__ = 'symbol'
 
