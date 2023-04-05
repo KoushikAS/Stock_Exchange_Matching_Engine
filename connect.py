@@ -118,7 +118,7 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
     session.add(newOrder)
     session.commit()
     xml_result = root.createElement('opened')
-    xml_result.setAttribute('id', newOrder.id)
+    xml_result.setAttribute('id', str(newOrder.id))
     xml_result.setAttribute('sym', sym)
     xml_result.setAttribute('amount', str(amt))
     xml_result.setAttribute('limit', str(limit))
