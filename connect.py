@@ -25,9 +25,10 @@ def get_xml() -> str:
     buffer = ''
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # socket.setblocking(0)
-    client_socket.bind(('localhost', 12345))
+    client_socket.bind(("0.0.0.0", 12345))
     client_socket.listen(5)
     c, addr = client_socket.accept()
+    print ("connection accepted")
     while not newline_rec:
         xml_size_bytes = c.recv(1)
         xml_size_str = xml_size_bytes.decode()
@@ -133,6 +134,7 @@ def receive_connection(testing: bool, path: str):
         print(action_xml)
     else:
         action_xml = get_xml()
+        print(action_xml)
     try:
         xml_tree = ET.fromstring(action_xml)
     except:

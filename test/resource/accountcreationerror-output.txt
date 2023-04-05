@@ -1,0 +1,4 @@
+<results>
+ <error id="1">Account already created</error>
+ <error id="2">Account already created</error>
+<results>
