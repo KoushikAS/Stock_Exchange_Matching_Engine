@@ -57,8 +57,9 @@ if __name__ == "__main__":
     Base.metadata.create_all(engine)
     # while (True):
         # add the ability to schedule from a core pool here
-    receive_connection(True, "model_xml.txt")
-    receive_connection(True, "model_xml_2.txt")
+    # receive_connection(True, "test/resource/accountcreation-input.txt")
+    # receive_connection(True, "test/resource/buyscript-input.txt")
+    receive_connection(False, None)
     session = Session()
     for e in session.query(Account).all():
         print("Account: " + str(e.id))
@@ -68,55 +69,3 @@ if __name__ == "__main__":
         print("Symbol: " + str(en.name))
     for en in session.query(Order).all():
         print("Order: " + str(en.id) + " : " + str(en.account) + " : " + str(en.symbol) + " : " + str(en.amount) + " : " + str(en.order_status))
-        
-
-    # sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()
-
-    # matchOrder(session, sym1[0])
-
-'''
-sym1 = Symbol("SPY")
-sym2 = Symbol("BTC")
-sym3 = Symbol("T5asdf")
-
-account1 = Account(123456, 50)
-account2 = Account(1234567890, 100)
-
-position1 = Position(sym1, 123.5, account1)
-position2 = Position(sym2, 55.5, account1)
-position3 = Position(sym3, 123.001, account1)
-position4 = Position(sym1, 123, account2)
-
-session.add(sym1)
-session.add(sym2)
-session.add(sym3)
-session.add(account1)
-session.add(account2)
-session.add(position1)
-session.add(position2)
-session.add(position3)
-session.add(position4)
-
-session.commit()
-session.close()
-
-
-sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()
-account1 = session.execute(select(Account).where(Account.id == 123456)).first()
-account2 = session.execute(select(Account).where(Account.id == 1234567890)).first()
-
-
-order1 = Order(account1[0], sym1[0], 500, 128, OrderType.SELL, OrderStatus.OPEN)
-order2 = Order(account2[0], sym1[0], 200, 140, OrderType.SELL, OrderStatus.OPEN)
-order3 = Order(account2[0], sym1[0], 400, 125, OrderType.BUY, OrderStatus.OPEN)
-order4 = Order(account2[0], sym1[0], 400, 124, OrderType.SELL, OrderStatus.OPEN)
-
-session.add(order1)
-session.add(order2)
-session.add(order3)
-session.add(order4)
-
-session.commit()
-session.close()
-'''
-print("Session committed")
