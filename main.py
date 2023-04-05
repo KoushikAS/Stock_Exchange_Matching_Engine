@@ -59,9 +59,10 @@ session = Session()
 
 sym1 = session.execute(select(Symbol).where(Symbol.name == "BTC")).first()
 
+'''
 matchOrder(session, sym1[0])
 
-'''
+
 sym1 = Symbol("SPY")
 sym2 = Symbol("BTC")
 sym3 = Symbol("T5asdf")
