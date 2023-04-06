@@ -390,9 +390,12 @@ def receive_connection(c: socket.socket):
                 else:
                     session.commit()
                     raise Exception("Malformatted xml in create")
+                session.close()
         elif xml_tree.tag == 'transactions':
             session = Session()
             account_id = xml_tree.attrib.get('id')
+            print("ACCCccc")
+            print(account_id)
             account = session.query(Account).filter(Account.id == account_id).scalar()
             if account is None:
                 print("account does not exists error")
@@ -400,6 +403,7 @@ def receive_connection(c: socket.socket):
                 # need to figure out how to generate an error for each child here
                 results_xml += "account error on transactions"
             session.commit()
+            session.close()
             for entry in xml_tree:
                 ses = Session()
                 account = ses.query(Account).filter(Account.id == account_id).with_for_update().scalar()
@@ -412,6 +416,7 @@ def receive_connection(c: socket.socket):
                 else:
                     raise Exception("Malformatted xml in transaction")
                 ses.commit()
+                ses.close()
         else:
             raise Exception("Got an XML that did not follow format")
 
