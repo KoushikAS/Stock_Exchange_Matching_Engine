@@ -37,16 +37,20 @@ if __name__ =="__main__":
     t1 = threading.Thread(target=buy_shares, args=())
     t2 = threading.Thread(target=sell_shares, args=())
 
-    startTime = datetime.datetime.now()
-    t1.start()
-    t2.start()
+    lst = []
+    for i in range(0, 10):
+        startTime = datetime.datetime.now()
+        t1.start()
+        t2.start()
 
-    t1.join()
-    t2.join()
+        t1.join()
+        t2.join()
 
-    endTime = datetime.datetime.now()
+        endTime = datetime.datetime.now()
 
-    diff = endTime - startTime
+        diff = endTime - startTime
+        lst.append(diff)
 
-    print(f'Difference: {diff}')
+        # print(f'Difference: {diff}')
+    print(f'Average time: {sum(lst) / len(lst)}')
 
