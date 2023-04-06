@@ -406,6 +406,7 @@ def receive_connection(c: socket.socket):
             session.close()
             for entry in xml_tree:
                 ses = Session()
+                print("I just made a new session")
                 account = ses.query(Account).filter(Account.id == account_id).with_for_update().scalar()
                 if entry.tag == 'order':
                     print(f"ID: {account_id} into create_order")
