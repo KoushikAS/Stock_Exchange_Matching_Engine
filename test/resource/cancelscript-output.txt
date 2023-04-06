@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <results>
  <canceled id="1">
-    <open shares="10"/>
- </status>
+    <canceled shares=5.0/>
+ </canceled>
 </results>
