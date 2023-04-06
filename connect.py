@@ -226,7 +226,6 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
             text = root.createTextNode('Insufficient shares in account')
             xml_result.appendChild(text)
             res.appendChild(xml_result)
-            session.commit()  # to release position
             return
 
         position.amount -= decimal.Decimal(abs(amt))
@@ -244,7 +243,6 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
         matchBuyOrder(session, newOrder, account)
     else:
         matchSellOrder(session, newOrder, account)
-    session.commit()
     xml_result = root.createElement('opened')
     xml_result.setAttribute('id', str(newOrder.id))
     xml_result.setAttribute('sym', sym)
@@ -279,7 +277,6 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
         addPosition(session, account, order_to_cancel.symbol, abs(order_to_cancel.amount))
 
     # cancel any order that is open, refund the account, reply with canceled
-    session.commit()
     xml_result = root.createElement('canceled')
     xml_result.setAttribute('id', id)
     child1 = root.createElement('canceled')
@@ -290,9 +287,9 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
     executed = session.query(ExecutedOrder).filter_by(order=order_to_cancel)
     for e in executed:
         c = root.createElement('executed')
-        c.appendChild('shares', str(e.executed_amount))
-        c.appendChild('price', str(e.executed_price))
-        c.appendChild('time', str(e.executed_time))
+        c.setAttribute('shares', str(e.executed_amount))
+        c.setAttribute('price', str(e.executed_price))
+        c.setAttribute('time', str(e.executed_time))
         xml_result.appendChild(c)
     res.appendChild(xml_result)
 
@@ -318,21 +315,27 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
     # get this order from the db
     xml_result = root.createElement('status')
     xml_result.setAttribute('id', id)
-
     if order_to_query.order_status is OrderStatus.OPEN:
         child1 = root.createElement('open')
-        child1.appendChild('shares', str(order_to_query.amount))
+        child1.setAttribute('shares', str(order_to_query.amount))
     elif order_to_query.order_status is OrderStatus.CANCEL:
         child1 = root.createElement('canceled')
-        child1.appendChild('shares', str(order_to_query.amount))
-        child1.appendChild('time', str(order_to_query.create_time))
+        child1.setAttribute('shares', str(order_to_query.amount))
+        child1.setAttribute('time', str(order_to_query.create_time))
+    else:
+        xml_result = root.createElement('error')
+        xml_result.setAttribute('id', id)
+        text = root.createTextNode('Order finished executing and was closed')
+        xml_result.appendChild(text)
+        res.appendChild(xml_result)
+        return
     xml_result.appendChild(child1)
     executed = session.query(ExecutedOrder).filter_by(order=order_to_query)
     for e in executed:
         c = root.createElement('executed')
-        c.appendChild('shares', str(e.executed_amount))
-        c.appendChild('price', str(e.executed_price))
-        c.appendChild('time', str(e.executed_time))
+        c.setAttribute('shares', str(e.executed_amount))
+        c.setAttribute('price', str(e.executed_price))
+        c.setAttribute('time', str(e.executed_time))
         xml_result.appendChild(c)
     res.appendChild(xml_result)
 
@@ -406,9 +409,9 @@ def receive_connection(c: socket.socket):
                     cancel_order(ses, entry, account, root, res)
                 elif entry.tag == 'query':
                     query_order(ses, entry, account, root, res)
-                    ses.commit()
                 else:
                     raise Exception("Malformatted xml in transaction")
+                ses.commit()
         else:
             raise Exception("Got an XML that did not follow format")
 
