@@ -393,22 +393,41 @@ def receive_connection(c: socket.socket):
         elif xml_tree.tag == 'transactions':
             session = Session()
             account_id = xml_tree.attrib.get('id')
+            acc_exist = True
             account = session.query(Account).filter(Account.id == account_id).scalar()
             if account is None:
-                print("account does not exists error")
-                # generate error xml piece
-                # need to figure out how to generate an error for each child here
-                results_xml += "account error on transactions"
+                acc_exist = False
             session.commit()
             for entry in xml_tree:
                 ses = Session()
                 account = ses.query(Account).filter(Account.id == account_id).with_for_update().scalar()
                 if entry.tag == 'order':
-                    create_order(ses, entry, account, root, res)
+                    if acc_exist:
+                        create_order(ses, entry, account, root, res)
+                    else:
+                        xml_result = root.createElement('error')
+                        xml_result.setAttribute('id', account_id)
+                        text = root.createTextNode('Account does not exist')
+                        xml_result.appendChild(text)
+                        res.appendChild(xml_result)
                 elif entry.tag == 'cancel':
-                    cancel_order(ses, entry, account, root, res)
+                    if acc_exist:
+                        cancel_order(ses, entry, account, root, res)
+                    else:
+                        xml_result = root.createElement('error')
+                        xml_result.setAttribute('id', account_id)
+                        text = root.createTextNode('Account does not exist')
+                        xml_result.appendChild(text)
+                        res.appendChild(xml_result)
                 elif entry.tag == 'query':
-                    query_order(ses, entry, account, root, res)
+                    if acc_exist:
+                        query_order(ses, entry, account, root, res)
+                    else:
+                        xml_result = root.createElement('error')
+                        xml_result.setAttribute('id', account_id)
+                        text = root.createTextNode('Account does not exist')
+                        xml_result.appendChild(text)
+                        res.appendChild(xml_result)
                 else:
                     raise Exception("Malformatted xml in transaction")
                 ses.commit()
