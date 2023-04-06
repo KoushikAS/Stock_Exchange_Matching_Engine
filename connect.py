@@ -217,7 +217,7 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
             session.commit()  # to release position
             return
 
-        position.amount -= decimal.Decimal(amt)
+        position.amount -= decimal.Decimal(abs(amt))
         session.add(position)
 
     account.balance = account.balance - cost  # check that works for sell orders
@@ -264,7 +264,7 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
     account.balance = account.balance + (float(order_to_cancel.amount) * float(order_to_cancel.limit_price))
     if order_to_cancel.order_type == OrderType.SELL:
         # Adding back the position to the Seller
-        addPosition(session, account, order_to_cancel.symbol, order_to_cancel.amount)
+        addPosition(session, account, order_to_cancel.symbol, abs(order_to_cancel.amount))
 
     # cancel any order that is open, refund the account, reply with canceled
     session.commit()
