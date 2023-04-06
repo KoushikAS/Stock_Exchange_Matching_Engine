@@ -16,7 +16,7 @@ def getOpenOrder(session, sym, order_type, orderBy):
         .filter(Order.symbol == sym, Order.order_type == order_type, Order.order_status == OrderStatus.OPEN) \
         .order_by(orderBy, Order.create_time) \
         .with_for_update() \
-        .scalar()
+        .first()
 
 
 def closeOrder(session, order, exchange_qty, exchange_price):
