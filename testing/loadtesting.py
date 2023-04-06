@@ -8,7 +8,7 @@ def place_order(input_file):
     s.connect(("127.0.0.1", 12345))
     s.sendall(input)
     data = s.recv(4096)
-    print(data.decode('utf-8'))
+    # print(data.decode('utf-8'))
     s.close()
 
 def buy_shares():
@@ -31,7 +31,7 @@ if __name__ =="__main__":
     s.connect(("127.0.0.1", 12345))
     s.sendall(input)
     data = s.recv(4096)
-    print(repr(data.decode('utf-8')))
+    # print(repr(data.decode('utf-8')))
     s.close()
 
     lst = []
