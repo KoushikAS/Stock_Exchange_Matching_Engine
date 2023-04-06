@@ -34,11 +34,11 @@ if __name__ =="__main__":
     print(repr(data.decode('utf-8')))
     s.close()
 
-    t1 = threading.Thread(target=buy_shares, args=())
-    t2 = threading.Thread(target=sell_shares, args=())
-
     lst = []
     for i in range(0, 10):
+        t1 = threading.Thread(target=buy_shares, args=())
+        t2 = threading.Thread(target=sell_shares, args=())
+        
         startTime = datetime.datetime.now()
         t1.start()
         t2.start()
