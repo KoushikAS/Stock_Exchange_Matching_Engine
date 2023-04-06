@@ -5,7 +5,7 @@ from models.position import Position
 from models.order import OrderType, Order, OrderStatus
 from connect import receive_connection
 from multiprocessing import Pool
-import socket
+import socket, os
 
 
 def getOpenOrder(session, sym, order_type, orderBy):
@@ -55,16 +55,27 @@ def matchOrder(session, sym):
 
         session.commit()
 
+def con(client_socket: socket.socket) -> socket.socket:
+    while(True):
+        c, addr = client_socket.accept()
+        yield c
+
 if __name__ == "__main__":
     Base.metadata.create_all(engine)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # socket.setblocking(0)
     client_socket.bind(("0.0.0.0", 12345))
     client_socket.listen(4)
-    p = Pool(processes=4)
-    while (True):
-        # p.map_async(receive_connection, [False, ''])
-        receive_connection(client_socket, False, '')
+
+    with Pool(os.cpu_count*3) as p:
+        for _ in p.imap_unordered(receive_connection, con(client_socket)):
+            continue
+
+
+
+
+    # while (True):
+        # p.apply_async(receive_connection, args=(client_socket, False, ''))
+        # receive_connection(client_socket, False, '')
     # add the ability to schedule from a core pool here
     # receive_connection(True, "test/resource/accountcreation-input.txt")
     # receive_connection(True, "test/resource/buyscript-input.txt")
