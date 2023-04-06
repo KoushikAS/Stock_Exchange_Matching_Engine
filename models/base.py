@@ -1,6 +1,6 @@
 import sys
 from sqlalchemy import MetaData, create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base, scoped_session
 from sqlalchemy.exc import SQLAlchemyError
 
 try:
@@ -19,4 +19,5 @@ m.reflect(engine)
 m.drop_all(engine)
 
 Base = declarative_base()
-Session = sessionmaker(bind=engine)
+session_fact = sessionmaker(bind=engine)
+Session = scoped_session(session_factory=session_fact)

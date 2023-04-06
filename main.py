@@ -16,6 +16,7 @@ if __name__ == "__main__":
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.bind(("0.0.0.0", 12345))
     client_socket.listen(4)
+    engine.dispose()
 
     with Pool(10) as p:
         for _ in p.imap_unordered(receive_connection, con(client_socket)):

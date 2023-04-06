@@ -2,25 +2,25 @@ import sys
 import threading
 import socket
 
-def place_order( input_file):
+def place_order(input_file):
     input = open( input_file, "rb").read()
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("127.0.0.1", 12345))
     s.sendall(input)
+    data = s.recv(4096)
+    print(data.decode('utf-8'))
     s.close()
 
 def buy_shares():
     print("Buying Share")
-    for i in range(1000000):
-        t = threading.Thread(target=place_order, args=("resource/buyscriptloadtesting-input.txt"))
-        t.start()
+    for i in range(200):
+        place_order("resource/buyscriptloadtesting-input.txt")
 
 
 def sell_shares():
     print("Sell Share")
-    for i in range(1000000):
-        t = threading.Thread(target=place_order, args=("resource/sellscriptloadtesting-input.txt"))
-        t.start()
+    for i in range(200):
+        place_order("resource/sellscriptloadtesting-input.txt")
 
 
 if __name__ =="__main__":
@@ -30,6 +30,8 @@ if __name__ =="__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("127.0.0.1", 12345))
     s.sendall(input)
+    data = s.recv(4096)
+    print(repr(data.decode('utf-8')))
     s.close()
 
     t1 = threading.Thread(target=buy_shares, args=())
