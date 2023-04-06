@@ -45,7 +45,7 @@ def addPosition(session, account, symbol, exchange_qty):
     position = session.query(Position) \
         .filter(Position.account == account, Position.symbol == symbol) \
         .with_for_update() \
-        .scalar()
+        .first()
 
     # Create a new position for the first time buyer
     if position is None:
