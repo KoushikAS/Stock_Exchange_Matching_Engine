@@ -91,8 +91,8 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
         # reject the request
         xml_result = root.createElement('error')
         xml_result.setAttribute('sym', sym)
-        xml_result.setAttribute('amount', amt)
-        xml_result.setAttribute('limit', limit)
+        xml_result.setAttribute('amount', str(amt))
+        xml_result.setAttribute('limit', str(limit))
         text = root.createTextNode('Insufficient funds in account')
         xml_result.appendChild(text)
         res.appendChild(xml_result)
