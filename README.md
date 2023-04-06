@@ -18,8 +18,9 @@ docker-compose up -d
 
 ## Testing
 
-There are two type of testing functionality testing
-Ensure the proxy server is running and then type the command
+There are two type of testing 
+
+Functionality testing: Ensure the exchange matching  server returns the expected output
 ```
 cd testing/
 bash functionality-test.sh 
@@ -30,7 +31,7 @@ This will check for all the functionality testing and matches the output.
 Note: Account creation output may differ if you run it multiple times. Please clear the database before running it
 
 
-To Run Load testing run 
+Load testing run: Esnures to flood the server with lot of request to stress test the server.
 
 ```
 cd testing/
