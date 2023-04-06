@@ -190,7 +190,6 @@ def receive_connection(c: socket.socket):
             action_xml = get_test_xml(path)
         else:
             action_xml = get_xml(c)
-            print(action_xml)
         try:
             xml_tree = ET.fromstring(action_xml)
         except:
