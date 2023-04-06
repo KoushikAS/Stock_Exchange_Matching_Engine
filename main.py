@@ -1,14 +1,23 @@
-from models.base import engine, Base
-from connect import receive_connection
-from multiprocessing import Pool
+import os
 import socket
+from multiprocessing import Pool
+
+from connect import receive_connection
+from models.base import engine, Base
+
+
+def con(client_socket: socket.socket) -> socket.socket:
+    while (True):
+        c, addr = client_socket.accept()
+        yield c
+
 
 if __name__ == "__main__":
     Base.metadata.create_all(engine)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
     client_socket.bind(("0.0.0.0", 12345))
     client_socket.listen(4)
-    p = Pool(processes=4)
-    while (True):
-        receive_connection(client_socket, False, '')
+
+    with Pool(10) as p:
+        for _ in p.imap_unordered(receive_connection, con(client_socket)):
+            continue

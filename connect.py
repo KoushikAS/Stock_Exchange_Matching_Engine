@@ -150,7 +150,7 @@ def create_account(session: Session, entry: ET.Element, root: minidom.Document, 
     else:
         xml_result = root.createElement('error')
         xml_result.setAttribute('id', id)
-        text = root.createTextNode('Account already exists')
+        text = root.createTextNode("Account already exists")
         xml_result.appendChild(text)
     res.appendChild(xml_result)
 
@@ -164,7 +164,7 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
             xml_result = root.createElement('error')
             xml_result.setAttribute('sym', symbol.name)
             xml_result.setAttribute('id', account_id)
-            text = root.createTextNode('Account for position does not exists')
+            text = root.createTextNode("Account for position does not exists")
             xml_result.appendChild(text)
             res.appendChild(xml_result)
             continue
@@ -178,7 +178,7 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
         if session.query(Position).filter_by(symbol=symbol, account_id=account_id).first() is not None:
             # possibly check if there are more than one of this sym and account_id combo (should not be possible)
             session.query(Position).filter_by(symbol=symbol, account_id=account_id).update(
-                {"amount": Position.amount + amt})
+                {'amount': Position.amount + amt})
         else:
             # can there be concurrency issues if multiple requests try to create the same position for an account at the same time?
             newPosition = Position(symbol, amt, session.query(Account).filter(Account.id == account_id).scalar())
@@ -282,11 +282,17 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
     session.commit()
     xml_result = root.createElement('canceled')
     xml_result.setAttribute('id', id)
-    child1 = root.createElement(f'canceled shares={order_to_cancel.amount} time={order_to_cancel.create_time}')
+    child1 = root.createElement('canceled')
+    child1.setAttribute('shares', str(order_to_cancel.amount))
+    child1.setAttribute('time',
+                        str(order_to_cancel.create_time))  # is this the right return time? or should it be the current time of cancel request
     xml_result.appendChild(child1)
     executed = session.query(ExecutedOrder).filter_by(order=order_to_cancel)
     for e in executed:
-        c = root.createElement(f'executed shares={e.executed_amount} price={e.executed_price} time={e.executed_time}')
+        c = root.createElement('executed')
+        c.appendChild('shares', str(e.executed_amount))
+        c.appendChild('price', str(e.executed_price))
+        c.appendChild('time', str(e.executed_time))
         xml_result.appendChild(c)
     res.appendChild(xml_result)
 
@@ -314,97 +320,97 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
     xml_result.setAttribute('id', id)
 
     if order_to_query.order_status is OrderStatus.OPEN:
-        child1 = root.createElement(f'open shares={order_to_query.amount}')
-        xml_result.appendChild(child1)
-    elif order_to_query.order_status is OrderStatus.CANCEL:
-        child1 = root.createElement(f'canceled shares={order_to_query.amount} time={order_to_query.create_time}')
-        xml_result.appendChild(child1)
-
+        child1 = root.createElement('open')
+        child1.appendChild('shares', str(order_to_query.amount))
+    else:
+        child1 = root.createElement('canceled')
+        child1.appendChild('shares', str(order_to_query.amount))
+        child1.appendChild('time', str(order_to_query.create_time))
+    xml_result.appendChild(child1)
     executed = session.query(ExecutedOrder).filter_by(order=order_to_query)
     for e in executed:
-        c = root.createElement(f'executed shares={e.executed_amount} price={e.executed_price} time={e.executed_time}')
+        c = root.createElement('executed')
+        c.appendChild('shares', str(e.executed_amount))
+        c.appendChild('price', str(e.executed_price))
+        c.appendChild('time', str(e.executed_time))
         xml_result.appendChild(c)
     res.appendChild(xml_result)
 
 
-def receive_connection(client_socket: socket.socket, testing: bool, path: str):
-    action_xml = ''
-    if testing:
-        action_xml = get_test_xml(path)
-    else:
-        c, addr = client_socket.accept()
+def receive_connection(c: socket.socket):
+    with c:
+
         action_xml = get_xml(c)
-        print(action_xml)
-    try:
-        xml_tree = ET.fromstring(action_xml)
-    except:
-        print("XML was malformatted")
-        return
-    results_xml = ''
-    root = minidom.Document()
-    res = root.createElement('results')
-    root.appendChild(res)
+        try:
+            xml_tree = ET.fromstring(action_xml)
+        except:
+            print("XML was malformatted")
+            return
+        results_xml = ''
+        root = minidom.Document()
+        res = root.createElement('results')
+        root.appendChild(res)
 
-    if xml_tree.tag == 'create':
-        for entry in xml_tree:
-            session = Session()
-            if entry.tag == 'account':
-                try:
-                    create_account(session, entry, root, res)
-                except:
-                    xml_result = root.createElement('error')
-                    xml_result.setAttribute('id', id)
-                    text = root.createTextNode('Account already exists')
-                    xml_result.appendChild(text)
-                    res.appendChild(xml_result)
-
-            elif entry.tag == 'symbol':
-                sym = entry.attrib.get('sym')
-                if session.query(Symbol).filter(Symbol.name == sym).first() is None:
-                    newSymbol = Symbol(sym)
-                    session.add(newSymbol)
-                    # xml_child = root.createElement('created')
-                    # xml_child.setAttribute('id', id)
-                    # res.appendChild(xml_child)
-                try:
+        if xml_tree.tag == 'create':
+            for entry in xml_tree:
+                session = Session()
+                if entry.tag == 'account':
+                    try:
+                        create_account(session, entry, root, res)
+                    except:
+                        xml_result = root.createElement('error')
+                        xml_result.setAttribute('id', id)
+                        text = root.createTextNode('Account already exists')
+                        xml_result.appendChild(text)
+                        res.appendChild(xml_result)
                     session.commit()
-                except:
-                    print("Symbol was created during the creation of the same symbol (!should never happen!)")
-                    pass
 
-                session2 = Session()
-                # should it be checked here if only one symbol exists with that name?
-                symbol = session2.query(Symbol).filter(Symbol.name == sym).scalar()
-                create_position(session2, entry, symbol, root, res)
-                session2.commit()
-            else:
-                raise Exception("Malformatted xml in create")
-    elif xml_tree.tag == 'transactions':
-        session = Session()
-        account_id = xml_tree.attrib.get('id')
-        account = session.query(Account).filter(Account.id == account_id).scalar()
-        if account is None:
-            print("account does not exists error")
-            # generate error xml piece
-            # need to figure out how to generate an error for each child here
-            results_xml += "account error on transactions"
-        session.commit()
-        for entry in xml_tree:
-            ses = Session()
-            account = ses.query(Account).filter(Account.id == account_id).with_for_update().scalar()
-            if entry.tag == 'order':
-                create_order(ses, entry, account, root, res)
-            elif entry.tag == 'cancel':
-                cancel_order(ses, entry, account, root, res)
-            elif entry.tag == 'query':
-                query_order(ses, entry, account, root, res)
-                ses.commit()
-            else:
-                raise Exception("Malformatted xml in transaction")
-    else:
-        raise Exception("Got an XML that did not follow format")
-    if testing:
-        print(root.toprettyxml(encoding="utf-8").decode())
-    else:
+                elif entry.tag == 'symbol':
+                    sym = entry.attrib.get('sym')
+                    if session.query(Symbol).filter(Symbol.name == sym).first() is None:
+                        newSymbol = Symbol(sym)
+                        session.add(newSymbol)
+                        # xml_child = root.createElement('created')
+                        # xml_child.setAttribute('id', id)
+                        # res.appendChild(xml_child)
+                    try:
+                        session.commit()
+                    except:
+                        print("Symbol was created during the creation of the same symbol (!should never happen!)")
+                        pass
+
+                    session2 = Session()
+                    # should it be checked here if only one symbol exists with that name?
+                    symbol = session2.query(Symbol).filter(Symbol.name == sym).scalar()
+                    create_position(session2, entry, symbol, root, res)
+                    session2.commit()
+                else:
+                    session.commit()
+                    raise Exception("Malformatted xml in create")
+        elif xml_tree.tag == 'transactions':
+            session = Session()
+            account_id = xml_tree.attrib.get('id')
+            account = session.query(Account).filter(Account.id == account_id).scalar()
+            if account is None:
+                print("account does not exists error")
+                # generate error xml piece
+                # need to figure out how to generate an error for each child here
+                results_xml += "account error on transactions"
+            session.commit()
+            for entry in xml_tree:
+                ses = Session()
+                account = ses.query(Account).filter(Account.id == account_id).with_for_update().scalar()
+                if entry.tag == 'order':
+                    create_order(ses, entry, account, root, res)
+                elif entry.tag == 'cancel':
+                    cancel_order(ses, entry, account, root, res)
+                elif entry.tag == 'query':
+                    query_order(ses, entry, account, root, res)
+                    ses.commit()
+                else:
+                    raise Exception("Malformatted xml in transaction")
+        else:
+            raise Exception("Got an XML that did not follow format")
+
         c.send(root.toprettyxml(encoding="utf-8"))
         c.close()
