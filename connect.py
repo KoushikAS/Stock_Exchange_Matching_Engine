@@ -21,7 +21,7 @@ def get_test_xml(path: str) -> str:
         i += 1
     return action_xml
 
-def get_xml() -> str:
+def get_xml() -> tuple[socket.socket, str]:
     newline_rec = False
     buffer = ''
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -29,7 +29,6 @@ def get_xml() -> str:
     client_socket.bind(("0.0.0.0", 12345))
     client_socket.listen(5)
     c, addr = client_socket.accept()
-    print ("connection accepted")
     while not newline_rec:
         xml_size_bytes = c.recv(1)
         xml_size_str = xml_size_bytes.decode()
@@ -39,7 +38,7 @@ def get_xml() -> str:
             buffer += xml_size_str
     xml_size = int(buffer)
     action_xml = c.recv(xml_size)
-    return action_xml
+    return c, action_xml
 
 def create_account(session: Session, entry: ET.Element, root: minidom.Document, res: minidom.Document) -> None:
     # can there be concurrency issues if multiple requests try to create the same account at the same time?
@@ -191,9 +190,8 @@ def receive_connection(testing: bool, path: str):
     action_xml = ''
     if testing:
         action_xml = get_test_xml(path)
-        print(action_xml)
     else:
-        action_xml = get_xml()
+        socket, action_xml = get_xml()
         print(action_xml)
     try:
         xml_tree = ET.fromstring(action_xml)
@@ -265,3 +263,5 @@ def receive_connection(testing: bool, path: str):
         raise Exception("Got an XML that did not follow format")
     if testing:
         print(root.toprettyxml(encoding="utf-8").decode())
+    else:
+        socket.send(root.toprettyxml(encoding="utf-8"))
