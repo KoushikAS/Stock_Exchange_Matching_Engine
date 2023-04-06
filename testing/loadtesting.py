@@ -35,6 +35,7 @@ if __name__ =="__main__":
     s.close()
 
     lst = []
+    sT = time.time()
     for i in range(0, 10):
         t1 = threading.Thread(target=buy_shares, args=())
         t2 = threading.Thread(target=sell_shares, args=())
@@ -52,5 +53,7 @@ if __name__ =="__main__":
         lst.append(diff)
 
         # print(f'Difference: {diff}')
+    eT = time.time()
     print(f'Average time: {sum(lst) / len(lst)}')
+    print(f'Avg2: {(sT - eT) / 10}')
 
