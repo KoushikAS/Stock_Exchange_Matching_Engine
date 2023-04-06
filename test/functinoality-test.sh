@@ -5,10 +5,10 @@ echo "Account Creation Error Test"
 python3 test-script.py accountcreationerror-input.txt accountcreationerror-output.txt
 echo "Buy Order Test"
 python3 test-script.py buyscript-input.txt buyscript-output.txt
-#echo "Buy Order Fail Test"
-#python3 test-script.py buyscripterror-input.txt buyscripterror-output.txt
-##echo "Buy Order Query Test"
-##python3 test-script.py queryscript-input.txt queryscript-output.txt
+echo "Buy Order Fail Test"
+python3 test-script.py buyscripterror-input.txt buyscripterror-output.txt
+#echo "Buy Order Query Test"
+#python3 test-script.py queryscript-input.txt queryscript-output.txt
 #echo "Buy Order Query Error Test"
 #python3 test-script.py queryscripterror-input.txt queryscripterror-output.txt
 #echo "Cancelling Buy Order Test"

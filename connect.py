@@ -205,7 +205,7 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
         xml_result.appendChild(text)
         res.appendChild(xml_result)
         return
-    order_type = None
+
     if amt < 0:
         order_type = OrderType.SELL
     else:
