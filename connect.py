@@ -56,7 +56,7 @@ def addPosition(session, account, symbol, exchange_qty):
     session.add(position)
 
 
-def matchBuyOrder(session, buy_order):
+def matchBuyOrder(session, buy_order, account):
     while True:
         sell_order = getOpenOrder(session, buy_order.symbol, OrderType.SELL, Order.limit_price.asc())
         if not sell_order:
@@ -72,11 +72,19 @@ def matchBuyOrder(session, buy_order):
         closeOrder(session, sell_order, exchange_qty, exchange_price)
 
         addPosition(session, buy_order.account, buy_order.symbol, exchange_qty)
+
+        expected_price_to_pay_for_exchange_qty = float(buy_order.limit_price) * float(exchange_qty)
+        actual_price_to_paid_for_exchange_qty = float(exchange_price) * float(exchange_qty)
+
+        if actual_price_to_paid_for_exchange_qty < expected_price_to_pay_for_exchange_qty:
+            diff = float(expected_price_to_pay_for_exchange_qty) - float(actual_price_to_paid_for_exchange_qty)
+            account.balance += float(diff)
+
         if buy_order.order_status == OrderStatus.EXECUTE:
             break
 
 
-def matchSellOrder(session, sell_order):
+def matchSellOrder(session, sell_order, account):
     while True:
         buy_order = getOpenOrder(session, sell_order.symbol, OrderType.BUY, Order.limit_price.desc())
 
@@ -93,6 +101,10 @@ def matchSellOrder(session, sell_order):
         closeOrder(session, sell_order, exchange_qty, exchange_price)
 
         addPosition(session, buy_order.account, buy_order.symbol, exchange_qty)
+
+        price_earned_by_seller = float(exchange_qty) * float(exchange_price)
+        account.balance += float(price_earned_by_seller)
+
         if sell_order.order_status == OrderStatus.CANCEL:
             break
 
@@ -229,9 +241,9 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
     newOrder = Order(account_entity, symbol_entity, amt, limit, order_type, order_status)
     session.add(newOrder)
     if order_type == OrderType.BUY:
-        matchBuyOrder(session, newOrder)
+        matchBuyOrder(session, newOrder, account)
     else:
-        matchSellOrder(session, newOrder)
+        matchSellOrder(session, newOrder, account)
     session.commit()
     xml_result = root.createElement('opened')
     xml_result.setAttribute('id', str(newOrder.id))
