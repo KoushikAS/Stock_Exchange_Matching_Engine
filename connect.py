@@ -181,12 +181,13 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
         xml_result.appendChild(c)
     res.appendChild(xml_result)
 
-def receive_connection(client_socket: socket.socket, testing: bool, path: str):
+def receive_connection(c: socket.socket):
+    testing = False
+    path = ''
     action_xml = ''
     if testing:
         action_xml = get_test_xml(path)
     else:
-        c, addr = client_socket.accept()
         action_xml = get_xml(c)
         print(action_xml)
     try:
@@ -261,3 +262,4 @@ def receive_connection(client_socket: socket.socket, testing: bool, path: str):
         print(root.toprettyxml(encoding="utf-8").decode())
     else:
         c.send(root.toprettyxml(encoding="utf-8"))
+    c.close()
