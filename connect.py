@@ -47,7 +47,7 @@ def addPosition(session, account, symbol, exchange_qty):
         .with_for_update() \
         .scalar()
 
-    #Create a new position for the first time buyer
+    # Create a new position for the first time buyer
     if position is None:
         position = Position(symbol=symbol, amount=exchange_qty, account=account)
     else:
@@ -71,7 +71,7 @@ def matchBuyOrder(session, buy_order):
         closeOrder(session, buy_order, exchange_qty, exchange_price)
         closeOrder(session, sell_order, exchange_qty, exchange_price)
 
-        addPosition( session,buy_order.account, buy_order.symbol, exchange_qty)
+        addPosition(session, buy_order.account, buy_order.symbol, exchange_qty)
         if buy_order.order_status == OrderStatus.EXECUTE:
             break
 
@@ -193,19 +193,40 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
         xml_result.appendChild(text)
         res.appendChild(xml_result)
         return
-
-    account.balance = account.balance - cost  # check that works for sell orders
     order_type = None
     if amt < 0:
         order_type = OrderType.SELL
     else:
         order_type = OrderType.BUY
+
+    account_entity = session.query(Account).filter(Account.id == account.id).scalar()
+    symbol_entity = session.query(Symbol).filter(Symbol.name == sym).scalar()
+    if order_type == OrderType.SELL:
+        position = session.query(Position) \
+            .filter(Position.symbol == symbol_entity, Position.account == account_entity) \
+            .with_for_update().scalar()
+        if position is None or position.amount < amt:
+            # reject the request
+            xml_result = root.createElement('error')
+            xml_result.setAttribute('sym', sym)
+            xml_result.setAttribute('amount', str(amt))
+            xml_result.setAttribute('limit', str(limit))
+            text = root.createTextNode('Insufficient shares in account')
+            xml_result.appendChild(text)
+            res.appendChild(xml_result)
+            session.commit()  # to release position
+            return
+
+        position.amount -= decimal.Decimal(amt)
+        session.add(position)
+
+    account.balance = account.balance - cost  # check that works for sell orders
+
     order_status = OrderStatus.OPEN
     # add a check that the symbol exists that you are trying to create an order for, create it if not
     # check if this account has some of the symbol in its positions actually???
     # check that the amount to sell is < amount owned
-    newOrder = Order(session.query(Account).filter(Account.id == account.id).scalar(),
-                     session.query(Symbol).filter(Symbol.name == sym).scalar(), amt, limit, order_type, order_status)
+    newOrder = Order(account_entity, symbol_entity, amt, limit, order_type, order_status)
     session.add(newOrder)
     if order_type == OrderType.BUY:
         matchBuyOrder(session, newOrder)
@@ -241,6 +262,10 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
 
     order_to_cancel.order_status = OrderStatus.CANCEL
     account.balance = account.balance + (float(order_to_cancel.amount) * float(order_to_cancel.limit_price))
+    if order_to_cancel.order_type == OrderType.SELL:
+        # Adding back the position to the Seller
+        addPosition(session, account, order_to_cancel.symbol, order_to_cancel.amount)
+
     # cancel any order that is open, refund the account, reply with canceled
     session.commit()
     xml_result = root.createElement('canceled')

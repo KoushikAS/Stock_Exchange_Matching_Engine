@@ -15,8 +15,8 @@ echo "Cancelling Buy Order Test"
 python3 test-script.py cancelscript-input.txt cancelscript-output.txt
 echo "Sell Order Test"
 python3 test-script.py sellscript-input.txt sellscript-output.txt
-#echo "Sell Order Error Test"
-#python3 test-script.py sellscripterror-input.txt sellscripterror-output.txt
+echo "Sell Order Error Test"
+python3 test-script.py sellscripterror-input.txt sellscripterror-output.txt
 echo "Buy Order to Match Sell order Test"
 python3 test-script.py buyscript2-input.txt buyscript2-output.txt
 echo "Query Half matched order Test"
