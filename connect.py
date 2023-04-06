@@ -318,7 +318,7 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
     # get this order from the db
     xml_result = root.createElement('status')
     xml_result.setAttribute('id', id)
-
+    print("past fail checks")
     if order_to_query.order_status is OrderStatus.OPEN:
         child1 = root.createElement('open')
         child1.appendChild('shares', str(order_to_query.amount))
@@ -327,13 +327,16 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
         child1.appendChild('shares', str(order_to_query.amount))
         child1.appendChild('time', str(order_to_query.create_time))
     xml_result.appendChild(child1)
+    print("appended the first child")
     executed = session.query(ExecutedOrder).filter_by(order=order_to_query)
+    print("got the executed nodes")
     for e in executed:
         c = root.createElement('executed')
         c.appendChild('shares', str(e.executed_amount))
         c.appendChild('price', str(e.executed_price))
         c.appendChild('time', str(e.executed_time))
         xml_result.appendChild(c)
+    print("at the end")
     res.appendChild(xml_result)
 
 
@@ -350,6 +353,7 @@ def receive_connection(c: socket.socket):
         root = minidom.Document()
         res = root.createElement('results')
         root.appendChild(res)
+        print(xml_tree.tag)
 
         if xml_tree.tag == 'create':
             for entry in xml_tree:
@@ -405,6 +409,7 @@ def receive_connection(c: socket.socket):
                 elif entry.tag == 'cancel':
                     cancel_order(ses, entry, account, root, res)
                 elif entry.tag == 'query':
+                    print("getting here")
                     query_order(ses, entry, account, root, res)
                     ses.commit()
                 else:
