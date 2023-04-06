@@ -148,10 +148,15 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
     session.commit()
     xml_result = root.createElement('canceled')
     xml_result.setAttribute('id', id)
+    child1 = root.createElement(f'canceled shares={order_to_cancel.amount} time={order_to_cancel.create_time}')
+    xml_result.appendChild(child1)
+    executed = session.query(ExecutedOrder).filter_by(order=order_to_cancel)
+    for e in executed:
+        c = root.createElement(f'executed shares={e.executed_amount} price={e.executed_price} time={e.executed_time}')
+        xml_result.appendChild(c)
     res.appendChild(xml_result)
 
 def query_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
-    results = ''
     id = entry.attrib.get('id')
     order_to_query = session.query(Order).filter_by(id=id, order_status=OrderStatus.OPEN).first()
     if order_to_query is None:
@@ -169,11 +174,18 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
         res.appendChild(xml_result)
         return
     # get this order from the db
-    results += f"Order is {order_to_query.order_status} with {order_to_query.amount} shares\n"
-    executed = session.query(ExecutedOrder).filter(ExecutedOrder.order==order_to_query)
+    xml_result = root.createElement('status')
+    xml_result.setAttribute('id', id)
+    if order_to_query.order_status is OrderStatus.OPEN:
+        child1 = root.createElement(f'open shares={order_to_query.amount}')
+    else:
+        child1 = root.createElement(f'canceled shares={order_to_query.amount} time={order_to_query.create_time}')
+    xml_result.appendChild(child1)
+    executed = session.query(ExecutedOrder).filter_by(order=order_to_query)
     for e in executed:
-        results += f"Executed {e.executed_amount} at {e.executed_price}, at {e.executed_time}\n"
-    return results
+        c = root.createElement(f'executed shares={e.executed_amount} price={e.executed_price} time={e.executed_time}')
+        xml_result.appendChild(c)
+    res.appendChild(xml_result)
 
 def receive_connection(testing: bool, path: str):
     action_xml = ''

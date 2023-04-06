@@ -62,10 +62,10 @@ if __name__ == "__main__":
     # receive_connection(False, None)
     receive_connection(True, "model_xml.txt")
     receive_connection(True, "model_xml_2.txt")
-    s = Session()
-    for e in s.query(Account).all():
-        print("Account: " + str(e.id) + " : " + str(e.balance))
-    s.commit()
+    # s = Session()
+    # for e in s.query(Account).all():
+    #     print("Account: " + str(e.id) + " : " + str(e.balance))
+    # s.commit()
     receive_connection(True, "model_xml_3.txt")
     receive_connection(True, "model_xml_4.txt")
     session = Session()
