@@ -1,23 +1,21 @@
 import socket
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
 
-from decimal import Decimal
-from models.order import OrderType, Order, OrderStatus
 from models.account import Account, account_exists
 from models.base import Session
-from models.symbol import Symbol
-from models.position import Position
 from models.executed_order import ExecutedOrder
-from xml.dom import minidom
+from models.order import OrderType, Order, OrderStatus
+from models.position import Position
+from models.symbol import Symbol
+
 
 def getOpenOrder(session, sym, order_type, orderBy):
     return session.query(Order) \
-            .where(Order.symbol == sym) \
-                .where(Order.order_type == order_type) \
-                .where(Order.order_status == OrderStatus.OPEN) \
-                .order_by(orderBy, Order.create_time) \
-        .first()
-        # .with_for_update().scalar()
+        .filter(Order.symbol == sym, Order.order_type == order_type, Order.order_status == OrderStatus.OPEN) \
+        .order_by(orderBy, Order.create_time) \
+        .with_for_update()\
+        .scalar()
 
 
 def closeOrder(session, order, exchange_qty, exchange_price):
@@ -40,7 +38,6 @@ def bestPrice(buy_order, sell_order):
 
 
 def matchBuyOrder(session, buy_order):
-
     while True:
         sell_order = getOpenOrder(session, buy_order.symbol, OrderType.SELL, Order.limit_price.asc())
         if not sell_order:
@@ -59,7 +56,7 @@ def matchBuyOrder(session, buy_order):
             break
 
 
-def matchSellOrder(session,  sell_order):
+def matchSellOrder(session, sell_order):
     while True:
         buy_order = getOpenOrder(session, sell_order.symbol, OrderType.BUY, Order.limit_price.desc())
 
@@ -78,6 +75,7 @@ def matchSellOrder(session,  sell_order):
         if sell_order.order_status == OrderStatus.CLOSE:
             break
 
+
 def get_test_xml(path: str) -> str:
     i = 0
     action_xml = ''
@@ -89,6 +87,7 @@ def get_test_xml(path: str) -> str:
             action_xml += line
         i += 1
     return action_xml
+
 
 def get_xml(c: socket.socket) -> str:
     newline_rec = False
@@ -103,6 +102,7 @@ def get_xml(c: socket.socket) -> str:
     xml_size = int(buffer)
     action_xml = c.recv(xml_size)
     return action_xml
+
 
 def create_account(session: Session, entry: ET.Element, root: minidom.Document, res: minidom.Document) -> None:
     # can there be concurrency issues if multiple requests try to create the same account at the same time?
@@ -121,11 +121,13 @@ def create_account(session: Session, entry: ET.Element, root: minidom.Document, 
         xml_result.appendChild(text)
     res.appendChild(xml_result)
 
-def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: minidom.Document, res: minidom.Document) -> None:
+
+def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: minidom.Document,
+                    res: minidom.Document) -> None:
     for e in entry:
         account_id = e.attrib.get('id')
         amt = int(e.text)
-        if session.query(Account).filter(Account.id==account_id).first() is None:
+        if session.query(Account).filter(Account.id == account_id).first() is None:
             xml_result = root.createElement('error')
             xml_result.setAttribute('sym', symbol.name)
             xml_result.setAttribute('id', account_id)
@@ -133,25 +135,29 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
             xml_result.appendChild(text)
             res.appendChild(xml_result)
             continue
-        
+
         # sanity check
         if session.query(Position).filter_by(symbol=symbol, account_id=account_id).count() > 1:
             print("Something has gone very wrong, and multiple positions exist for the same sym and account combo")
-            raise Exception("Something has gone very wrong, and multiple positions exist for the same sym and account combo")
-        
+            raise Exception(
+                "Something has gone very wrong, and multiple positions exist for the same sym and account combo")
+
         if session.query(Position).filter_by(symbol=symbol, account_id=account_id).first() is not None:
             # possibly check if there are more than one of this sym and account_id combo (should not be possible)
-            session.query(Position).filter_by(symbol=symbol, account_id=account_id).update({"amount": Position.amount + amt})
+            session.query(Position).filter_by(symbol=symbol, account_id=account_id).update(
+                {"amount": Position.amount + amt})
         else:
-        # can there be concurrency issues if multiple requests try to create the same position for an account at the same time?
-            newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account_id).scalar())
+            # can there be concurrency issues if multiple requests try to create the same position for an account at the same time?
+            newPosition = Position(symbol, amt, session.query(Account).filter(Account.id == account_id).scalar())
             session.add(newPosition)
         xml_result = root.createElement('created')
         xml_result.setAttribute('sym', symbol.name)
         xml_result.setAttribute('id', account_id)
         res.appendChild(xml_result)
 
-def create_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
+
+def create_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document,
+                 res: minidom.Document) -> None:
     sym = entry.attrib.get('sym')
     amt = float(entry.attrib.get('amount'))
     limit = float(entry.attrib.get('limit'))
@@ -167,7 +173,7 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
         res.appendChild(xml_result)
         return
 
-    account.balance = account.balance - cost # check that works for sell orders
+    account.balance = account.balance - cost  # check that works for sell orders
     order_type = None
     if amt < 0:
         order_type = OrderType.SELL
@@ -177,7 +183,8 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
     # add a check that the symbol exists that you are trying to create an order for, create it if not
     # check if this account has some of the symbol in its positions actually???
     # check that the amount to sell is < amount owned
-    newOrder = Order(session.query(Account).filter(Account.id==account.id).scalar(), session.query(Symbol).filter(Symbol.name==sym).scalar(), amt, limit, order_type, order_status)
+    newOrder = Order(session.query(Account).filter(Account.id == account.id).scalar(),
+                     session.query(Symbol).filter(Symbol.name == sym).scalar(), amt, limit, order_type, order_status)
     session.add(newOrder)
     if order_type == OrderType.BUY:
         matchBuyOrder(session, newOrder)
@@ -191,7 +198,9 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
     xml_result.setAttribute('limit', str(limit))
     res.appendChild(xml_result)
 
-def cancel_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
+
+def cancel_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document,
+                 res: minidom.Document) -> None:
     id = entry.attrib.get('id')
     order_to_cancel = session.query(Order).filter_by(id=id, order_status=OrderStatus.OPEN).with_for_update().scalar()
     if order_to_cancel is None:
@@ -208,7 +217,7 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
         xml_result.appendChild(text)
         res.appendChild(xml_result)
         return
-    
+
     order_to_cancel.order_status = OrderStatus.CLOSE
     account.balance = account.balance + (float(order_to_cancel.amount) * float(order_to_cancel.limit_price))
     # cancel any order that is open, refund the account, reply with canceled
@@ -223,7 +232,9 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
         xml_result.appendChild(c)
     res.appendChild(xml_result)
 
-def query_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document, res: minidom.Document) -> None:
+
+def query_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document,
+                res: minidom.Document) -> None:
     id = entry.attrib.get('id')
     order_to_query = session.query(Order).filter_by(id=id, order_status=OrderStatus.OPEN).first()
     if order_to_query is None:
@@ -253,6 +264,7 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
         c = root.createElement(f'executed shares={e.executed_amount} price={e.executed_price} time={e.executed_time}')
         xml_result.appendChild(c)
     res.appendChild(xml_result)
+
 
 def receive_connection(client_socket: socket.socket, testing: bool, path: str):
     action_xml = ''
@@ -287,7 +299,7 @@ def receive_connection(client_socket: socket.socket, testing: bool, path: str):
 
             elif entry.tag == 'symbol':
                 sym = entry.attrib.get('sym')
-                if session.query(Symbol).filter(Symbol.name==sym).first() is None:
+                if session.query(Symbol).filter(Symbol.name == sym).first() is None:
                     newSymbol = Symbol(sym)
                     session.add(newSymbol)
                     # xml_child = root.createElement('created')
@@ -301,7 +313,7 @@ def receive_connection(client_socket: socket.socket, testing: bool, path: str):
 
                 session2 = Session()
                 # should it be checked here if only one symbol exists with that name?
-                symbol = session2.query(Symbol).filter(Symbol.name==sym).scalar()
+                symbol = session2.query(Symbol).filter(Symbol.name == sym).scalar()
                 create_position(session2, entry, symbol, root, res)
                 session2.commit()
             else:
@@ -309,7 +321,7 @@ def receive_connection(client_socket: socket.socket, testing: bool, path: str):
     elif xml_tree.tag == 'transactions':
         session = Session()
         account_id = xml_tree.attrib.get('id')
-        account = session.query(Account).filter(Account.id==account_id).scalar()
+        account = session.query(Account).filter(Account.id == account_id).scalar()
         if account is None:
             print("account does not exists error")
             # generate error xml piece
@@ -318,7 +330,7 @@ def receive_connection(client_socket: socket.socket, testing: bool, path: str):
         session.commit()
         for entry in xml_tree:
             ses = Session()
-            account = ses.query(Account).filter(Account.id==account_id).with_for_update().scalar()
+            account = ses.query(Account).filter(Account.id == account_id).with_for_update().scalar()
             if entry.tag == 'order':
                 create_order(ses, entry, account, root, res)
             elif entry.tag == 'cancel':
