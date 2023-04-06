@@ -48,7 +48,7 @@ def create_account(session: Session, entry: ET.Element, root: minidom.Document, 
     else:
         xml_result = root.createElement('error')
         xml_result.setAttribute('id', id)
-        text = root.createTextNode('Account already exists')
+        text = root.createTextNode("Account already exists")
         xml_result.appendChild(text)
     res.appendChild(xml_result)
 
@@ -60,7 +60,7 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
             xml_result = root.createElement('error')
             xml_result.setAttribute('sym', symbol.name)
             xml_result.setAttribute('id', account_id)
-            text = root.createTextNode('Account for position does not exists')
+            text = root.createTextNode("Account for position does not exists")
             xml_result.appendChild(text)
             res.appendChild(xml_result)
             continue
@@ -72,7 +72,7 @@ def create_position(session: Session, entry: ET.Element, symbol: Symbol, root: m
         
         if session.query(Position).filter_by(symbol=symbol, account_id=account_id).first() is not None:
             # possibly check if there are more than one of this sym and account_id combo (should not be possible)
-            session.query(Position).filter_by(symbol=symbol, account_id=account_id).update({"amount": Position.amount + amt})
+            session.query(Position).filter_by(symbol=symbol, account_id=account_id).update({'amount': Position.amount + amt})
         else:
         # can there be concurrency issues if multiple requests try to create the same position for an account at the same time?
             newPosition = Position(symbol, amt, session.query(Account).filter(Account.id==account_id).scalar())
@@ -264,4 +264,5 @@ def receive_connection(c: socket.socket):
         else:
             c.send(root.toprettyxml(encoding="utf-8"))
         c.shutdown()
+        c.close()
     print("connection closed")
