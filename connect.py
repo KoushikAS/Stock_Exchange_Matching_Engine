@@ -279,7 +279,6 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
         addPosition(session, account, order_to_cancel.symbol, abs(order_to_cancel.amount))
 
     # cancel any order that is open, refund the account, reply with canceled
-    session.commit()
     xml_result = root.createElement('canceled')
     xml_result.setAttribute('id', id)
     child1 = root.createElement('canceled')
@@ -319,13 +318,20 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
     xml_result = root.createElement('status')
     xml_result.setAttribute('id', id)
     print("past fail checks")
+    print(order_to_query.order_status)
     if order_to_query.order_status is OrderStatus.OPEN:
+        print("started if")
         child1 = root.createElement('open')
         child1.appendChild('shares', str(order_to_query.amount))
+        print("went if")
     elif order_to_query.order_status is OrderStatus.CANCEL:
+        print("started else")
         child1 = root.createElement('canceled')
         child1.appendChild('shares', str(order_to_query.amount))
         child1.appendChild('time', str(order_to_query.create_time))
+        print("went else")
+    else:
+        print("AHA THIS IS THE ISSUE")
     xml_result.appendChild(child1)
     print("appended the first child")
     executed = session.query(ExecutedOrder).filter_by(order=order_to_query)
@@ -408,6 +414,7 @@ def receive_connection(c: socket.socket):
                     create_order(ses, entry, account, root, res)
                 elif entry.tag == 'cancel':
                     cancel_order(ses, entry, account, root, res)
+                    ses.commit()
                 elif entry.tag == 'query':
                     print("getting here")
                     query_order(ses, entry, account, root, res)
