@@ -37,14 +37,16 @@ if __name__ =="__main__":
     t1 = threading.Thread(target=buy_shares, args=())
     t2 = threading.Thread(target=sell_shares, args=())
 
-    startTime = datetime.datetime.ctime()
+    startTime = datetime.datetime.now()
     t1.start()
     t2.start()
 
     t1.join()
     t2.join()
 
-    endTime = datetime.datetime.ctime()
+    endTime = datetime.datetime.now()
 
-    print(f'Difference: {endTime - startTime}')
+    diff = endTime - startTime
+
+    print(f'Difference: {diff.strftime("%H:%M:%S")}')
 
