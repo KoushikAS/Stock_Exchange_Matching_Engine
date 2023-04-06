@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <results>
- <error sym="SPY" amount="5" limit="2">Insufficent Funds</error>
+ <error sym="SPY" amount="25.0" limit="2.0">Insufficient funds in account</error>
 </results>
