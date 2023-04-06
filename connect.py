@@ -142,11 +142,16 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
     session.commit()
     xml_result = root.createElement('canceled')
     xml_result.setAttribute('id', id)
-    child1 = root.createElement(f'canceled shares={order_to_cancel.amount} time={order_to_cancel.create_time}')
+    child1 = root.createElement('canceled')
+    child1.setAttribute('shares', str(order_to_cancel.amount))
+    child1.setAttribute('time', str(order_to_cancel.create_time)) # is this the right return time? or should it be the current time of cancel request
     xml_result.appendChild(child1)
     executed = session.query(ExecutedOrder).filter_by(order=order_to_cancel)
     for e in executed:
-        c = root.createElement(f'executed shares={e.executed_amount} price={e.executed_price} time={e.executed_time}')
+        c = root.createElement('executed')
+        c.appendChild('shares', str(e.executed_amount))
+        c.appendChild('price', str(e.executed_price))
+        c.appendChild('time', str(e.executed_time))
         xml_result.appendChild(c)
     res.appendChild(xml_result)
 
@@ -171,13 +176,19 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
     xml_result = root.createElement('status')
     xml_result.setAttribute('id', id)
     if order_to_query.order_status is OrderStatus.OPEN:
-        child1 = root.createElement(f'open shares={order_to_query.amount}')
+        child1 = root.createElement('open')
+        child1.appendChild('shares', str(order_to_query.amount))
     else:
-        child1 = root.createElement(f'canceled shares={order_to_query.amount} time={order_to_query.create_time}')
+        child1 = root.createElement('canceled')
+        child1.appendChild('shares', str(order_to_query.amount))
+        child1.appendChild('time', str(order_to_query.create_time))
     xml_result.appendChild(child1)
     executed = session.query(ExecutedOrder).filter_by(order=order_to_query)
     for e in executed:
-        c = root.createElement(f'executed shares={e.executed_amount} price={e.executed_price} time={e.executed_time}')
+        c = root.createElement('executed')
+        c.appendChild('shares', str(e.executed_amount))
+        c.appendChild('price', str(e.executed_price))
+        c.appendChild('time', str(e.executed_time))
         xml_result.appendChild(c)
     res.appendChild(xml_result)
 

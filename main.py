@@ -5,7 +5,7 @@ from models.position import Position
 from models.order import OrderType, Order, OrderStatus
 from connect import receive_connection
 from multiprocessing import Pool
-import socket
+import socket, os
 
 
 def getOpenOrder(session, sym, order_type, orderBy):
@@ -66,13 +66,13 @@ if __name__ == "__main__":
     client_socket.bind(("0.0.0.0", 12345))
     client_socket.listen(4)
 
-    with Pool(processes=4) as p:
+    with Pool(os.cpu_count*3) as p:
         for _ in p.imap_unordered(receive_connection, con(client_socket)):
             continue
 
 
 
-        
+
     # while (True):
         # p.apply_async(receive_connection, args=(client_socket, False, ''))
         # receive_connection(client_socket, False, '')
