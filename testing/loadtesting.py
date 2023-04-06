@@ -1,6 +1,6 @@
 import sys
 import threading
-import socket
+import socket, datetime
 
 def place_order(input_file):
     input = open( input_file, "rb").read()
@@ -37,7 +37,14 @@ if __name__ =="__main__":
     t1 = threading.Thread(target=buy_shares, args=())
     t2 = threading.Thread(target=sell_shares, args=())
 
+    startTime = datetime.datetime.ctime()
     t1.start()
     t2.start()
 
+    t1.join()
+    t2.join()
+
+    endTime = datetime.datetime.ctime()
+
+    print(f'Difference: {endTime - startTime}')
 
