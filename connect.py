@@ -21,14 +21,9 @@ def get_test_xml(path: str) -> str:
         i += 1
     return action_xml
 
-def get_xml() -> tuple[socket.socket, str]:
+def get_xml(c: socket.socket) -> str:
     newline_rec = False
     buffer = ''
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # socket.setblocking(0)
-    client_socket.bind(("0.0.0.0", 12345))
-    client_socket.listen(5)
-    c, addr = client_socket.accept()
     while not newline_rec:
         xml_size_bytes = c.recv(1)
         xml_size_str = xml_size_bytes.decode()
@@ -38,7 +33,7 @@ def get_xml() -> tuple[socket.socket, str]:
             buffer += xml_size_str
     xml_size = int(buffer)
     action_xml = c.recv(xml_size)
-    return c, action_xml
+    return action_xml
 
 def create_account(session: Session, entry: ET.Element, root: minidom.Document, res: minidom.Document) -> None:
     # can there be concurrency issues if multiple requests try to create the same account at the same time?
@@ -96,8 +91,8 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
         # reject the request
         xml_result = root.createElement('error')
         xml_result.setAttribute('sym', sym)
-        xml_result.setAttribute('amount', amt)
-        xml_result.setAttribute('limit', limit)
+        xml_result.setAttribute('amount', str(amt))
+        xml_result.setAttribute('limit', str(limit))
         text = root.createTextNode('Insufficient funds in account')
         xml_result.appendChild(text)
         res.appendChild(xml_result)
@@ -186,12 +181,13 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
         xml_result.appendChild(c)
     res.appendChild(xml_result)
 
-def receive_connection(testing: bool, path: str):
+def receive_connection(client_socket: socket.socket, testing: bool, path: str):
     action_xml = ''
     if testing:
         action_xml = get_test_xml(path)
     else:
-        socket, action_xml = get_xml()
+        c, addr = client_socket.accept()
+        action_xml = get_xml(c)
         print(action_xml)
     try:
         xml_tree = ET.fromstring(action_xml)
@@ -264,4 +260,4 @@ def receive_connection(testing: bool, path: str):
     if testing:
         print(root.toprettyxml(encoding="utf-8").decode())
     else:
-        socket.send(root.toprettyxml(encoding="utf-8"))
+        c.send(root.toprettyxml(encoding="utf-8"))
