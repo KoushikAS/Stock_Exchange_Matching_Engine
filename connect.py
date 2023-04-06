@@ -1,5 +1,7 @@
 import socket
 import xml.etree.ElementTree as ET
+
+from decimal import Decimal
 from models.order import OrderType, Order, OrderStatus
 from models.account import Account, account_exists
 from models.base import Session
@@ -8,6 +10,73 @@ from models.position import Position
 from models.executed_order import ExecutedOrder
 from xml.dom import minidom
 
+def getOpenOrder(session, sym, order_type, orderBy):
+    return session.query(Order) \
+            .where(Order.symbol == sym) \
+                .where(Order.order_type == order_type) \
+                .where(Order.order_status == OrderStatus.OPEN) \
+                .order_by(orderBy, Order.create_time) \
+        .first()
+        # .with_for_update().scalar()
+
+
+def closeOrder(session, order, exchange_qty, exchange_price):
+    execute_order = ExecutedOrder(order, exchange_price, exchange_qty)
+    session.add(execute_order)
+
+    if order.amount > exchange_qty:
+        order.amount -= float(exchange_qty)
+    else:
+        order.order_status = OrderStatus.CLOSE
+
+    session.add(order)
+
+
+def bestPrice(buy_order, sell_order):
+    if buy_order.create_time < sell_order.create_time:
+        return buy_order.limit_price
+    else:
+        return sell_order.limit_price
+
+
+def matchBuyOrder(session, buy_order):
+
+    while True:
+        sell_order = getOpenOrder(session, buy_order.symbol, OrderType.SELL, Order.limit_price.asc())
+        if not sell_order:
+            break
+
+        if buy_order.limit_price < sell_order.limit_price:
+            break
+
+        exchange_qty = min(buy_order.amount, sell_order.amount)
+        exchange_price = bestPrice(buy_order, sell_order)
+
+        closeOrder(session, buy_order, exchange_qty, exchange_price)
+        closeOrder(session, sell_order, exchange_qty, exchange_price)
+
+        if buy_order.order_status == OrderStatus.CLOSE:
+            break
+
+
+def matchSellOrder(session,  sell_order):
+    while True:
+        buy_order = getOpenOrder(session, sell_order.symbol, OrderType.BUY, Order.limit_price.desc())
+
+        if not buy_order:
+            break
+
+        if buy_order.limit_price < sell_order.limit_price:
+            break
+
+        exchange_qty = min(buy_order.amount, sell_order.amount)
+        exchange_price = bestPrice(buy_order, sell_order)
+
+        closeOrder(session, buy_order, exchange_qty, exchange_price)
+        closeOrder(session, sell_order, exchange_qty, exchange_price)
+
+        if sell_order.order_status == OrderStatus.CLOSE:
+            break
 
 def get_test_xml(path: str) -> str:
     i = 0
@@ -110,6 +179,10 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
     # check that the amount to sell is < amount owned
     newOrder = Order(session.query(Account).filter(Account.id==account.id).scalar(), session.query(Symbol).filter(Symbol.name==sym).scalar(), amt, limit, order_type, order_status)
     session.add(newOrder)
+    if order_type == OrderType.BUY:
+        matchBuyOrder(session, newOrder)
+    else:
+        matchSellOrder(session, newOrder)
     session.commit()
     xml_result = root.createElement('opened')
     xml_result.setAttribute('id', str(newOrder.id))

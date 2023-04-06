@@ -1,59 +1,9 @@
-from models.base import engine, Base, Session
-from models.account import Account
-from models.symbol import Symbol
-from models.position import Position
-from models.order import OrderType, Order, OrderStatus
+from models.base import engine, Base
 from connect import receive_connection
 from multiprocessing import Pool
 import socket
 
 
-def getOpenOrder(session, sym, order_type, orderBy):
-    return session.query(Order).where(Order.symbol == sym) \
-        .where(Order.order_type == order_type) \
-        .where(Order.order_status == OrderStatus.OPEN) \
-        .order_by(orderBy, Order.create_time) \
-        .first()
-
-
-def closeOrder(session, order, exchange_qty, exchange_price):
-    if order.amount > exchange_qty:
-        order.amount -= exchange_qty
-        closed_order = Order(order.account, order.symbol, exchange_qty, exchange_price,
-                             order.order_type, OrderStatus.CLOSE)
-        session.add(closed_order)
-    else:
-        order.order_status = OrderStatus.CLOSE
-        order.limit_price = exchange_price
-
-    session.add(order)
-
-
-def bestPrice(buy_order, sell_order):
-    if buy_order.create_time < sell_order.create_time:
-        return buy_order.limit_price
-    else:
-        return sell_order.limit_price
-
-
-def matchOrder(session, sym):
-    while True:
-        buy_order = getOpenOrder(session, sym, OrderType.BUY, Order.limit_price.desc())
-        sell_order = getOpenOrder(session, sym, OrderType.SELL, Order.limit_price.asc())
-
-        if not buy_order or not sell_order:
-            break
-
-        if buy_order.limit_price < sell_order.limit_price:
-            break
-
-        exchange_qty = min(buy_order.amount, sell_order.amount)
-        exchange_price = bestPrice(buy_order, sell_order)
-
-        closeOrder(session, buy_order, exchange_qty, exchange_price)
-        closeOrder(session, sell_order, exchange_qty, exchange_price)
-
-        session.commit()
 
 if __name__ == "__main__":
     Base.metadata.create_all(engine)
