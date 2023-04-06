@@ -19,7 +19,7 @@ python3 test-script.py sellscript-input.txt sellscript-output.txt
 #python3 test-script.py sellscripterror-input.txt sellscripterror-output.txt
 echo "Buy Order to Match Sell order Test"
 python3 test-script.py buyscript2-input.txt buyscript2-output.txt
-#echo "Query Half matched order Test"
-#python3 test-script.py queryscript2-input.txt queryscript2-output.txt
+echo "Query Half matched order Test"
+python3 test-script.py queryscript2-input.txt queryscript2-output.txt
 #echo "Cancel half matched order Test"
 #python3 test-script.py cancelscript2-input.txt cancelscript2-output.txt

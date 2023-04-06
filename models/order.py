@@ -1,17 +1,22 @@
 import enum
-from sqlalchemy import Column, Integer, Numeric, ForeignKey, Enum, DateTime
-from sqlalchemy.orm import relationship
-from models.base import Base
 import time
+
+from sqlalchemy import Column, Integer, Numeric, ForeignKey, Enum
+from sqlalchemy.orm import relationship
+
+from models.base import Base
 
 
 class OrderType(enum.Enum):
     BUY = 'BUY'
     SELL = 'SELL'
 
+
 class OrderStatus(enum.Enum):
     OPEN = 'OPEN'
-    CLOSE = 'CLOSE'
+    CANCEL = 'CANCEL'
+    EXECUTE = 'EXECUTE'
+
 
 class Order(Base):
     __tablename__ = 'order'

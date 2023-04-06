@@ -1,3 +1,4 @@
+import decimal
 import socket
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -19,13 +20,16 @@ def getOpenOrder(session, sym, order_type, orderBy):
 
 
 def closeOrder(session, order, exchange_qty, exchange_price):
-    execute_order = ExecutedOrder(order, exchange_price, exchange_qty)
+    execute_order = ExecutedOrder(order,exchange_qty, exchange_price)
     session.add(execute_order)
 
-    if order.amount > exchange_qty:
-        order.amount -= float(exchange_qty)
+    if abs(order.amount) > exchange_qty:
+        if order.amount < 0:
+            order.amount += decimal.Decimal(exchange_qty)
+        else:
+            order.amount -= decimal.Decimal(exchange_qty)
     else:
-        order.order_status = OrderStatus.CLOSE
+        order.order_status = OrderStatus.EXECUTE
 
     session.add(order)
 
@@ -46,13 +50,13 @@ def matchBuyOrder(session, buy_order):
         if buy_order.limit_price < sell_order.limit_price:
             break
 
-        exchange_qty = min(buy_order.amount, sell_order.amount)
+        exchange_qty = min(buy_order.amount, abs(sell_order.amount))
         exchange_price = bestPrice(buy_order, sell_order)
 
         closeOrder(session, buy_order, exchange_qty, exchange_price)
         closeOrder(session, sell_order, exchange_qty, exchange_price)
 
-        if buy_order.order_status == OrderStatus.CLOSE:
+        if buy_order.order_status == OrderStatus.EXECUTE:
             break
 
 
@@ -66,13 +70,13 @@ def matchSellOrder(session, sell_order):
         if buy_order.limit_price < sell_order.limit_price:
             break
 
-        exchange_qty = min(buy_order.amount, sell_order.amount)
+        exchange_qty = min(buy_order.amount, abs(sell_order.amount))
         exchange_price = bestPrice(buy_order, sell_order)
 
         closeOrder(session, buy_order, exchange_qty, exchange_price)
         closeOrder(session, sell_order, exchange_qty, exchange_price)
 
-        if sell_order.order_status == OrderStatus.CLOSE:
+        if sell_order.order_status == OrderStatus.CANCEL:
             break
 
 
@@ -218,7 +222,7 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
         res.appendChild(xml_result)
         return
 
-    order_to_cancel.order_status = OrderStatus.CLOSE
+    order_to_cancel.order_status = OrderStatus.CANCEL
     account.balance = account.balance + (float(order_to_cancel.amount) * float(order_to_cancel.limit_price))
     # cancel any order that is open, refund the account, reply with canceled
     session.commit()
@@ -236,7 +240,7 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
 def query_order(session: Session, entry: ET.Element, account: Account, root: minidom.Document,
                 res: minidom.Document) -> None:
     id = entry.attrib.get('id')
-    order_to_query = session.query(Order).filter_by(id=id, order_status=OrderStatus.OPEN).first()
+    order_to_query = session.query(Order).filter_by(id=id).first()
     if order_to_query is None:
         xml_result = root.createElement('error')
         xml_result.setAttribute('id', id)
@@ -254,11 +258,14 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
     # get this order from the db
     xml_result = root.createElement('status')
     xml_result.setAttribute('id', id)
+
     if order_to_query.order_status is OrderStatus.OPEN:
         child1 = root.createElement(f'open shares={order_to_query.amount}')
-    else:
+        xml_result.appendChild(child1)
+    elif order_to_query.order_status is OrderStatus.CANCEL:
         child1 = root.createElement(f'canceled shares={order_to_query.amount} time={order_to_query.create_time}')
-    xml_result.appendChild(child1)
+        xml_result.appendChild(child1)
+
     executed = session.query(ExecutedOrder).filter_by(order=order_to_query)
     for e in executed:
         c = root.createElement(f'executed shares={e.executed_amount} price={e.executed_price} time={e.executed_time}')

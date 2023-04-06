@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <results>
  <status id="2">
-    <open shares="5"/>
-    <executed shares="5" price="6"/>
+    <open shares=-5.0/>
+    <executed shares=5.0 price=1.0/>
  </status>
 </results>
