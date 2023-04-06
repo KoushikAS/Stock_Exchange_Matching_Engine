@@ -339,8 +339,8 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
 
 def receive_connection(c: socket.socket):
     with c:
-
         action_xml = get_xml(c)
+        print(action_xml)
         try:
             xml_tree = ET.fromstring(action_xml)
         except:
