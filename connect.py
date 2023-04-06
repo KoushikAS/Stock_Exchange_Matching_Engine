@@ -15,12 +15,12 @@ def getOpenOrder(session, sym, order_type, orderBy):
     return session.query(Order) \
         .filter(Order.symbol == sym, Order.order_type == order_type, Order.order_status == OrderStatus.OPEN) \
         .order_by(orderBy, Order.create_time) \
-        .with_for_update()\
+        .with_for_update() \
         .scalar()
 
 
 def closeOrder(session, order, exchange_qty, exchange_price):
-    execute_order = ExecutedOrder(order,exchange_qty, exchange_price)
+    execute_order = ExecutedOrder(order, exchange_qty, exchange_price)
     session.add(execute_order)
 
     if abs(order.amount) > exchange_qty:
@@ -41,6 +41,21 @@ def bestPrice(buy_order, sell_order):
         return sell_order.limit_price
 
 
+def addPosition(session, account, symbol, exchange_qty):
+    position = session.query(Position) \
+        .filter(Position.account == account, Position.symbol == symbol) \
+        .with_for_update() \
+        .scalar()
+
+    #Create a new position for the first time buyer
+    if position is None:
+        position = Position(symbol=symbol, amount=exchange_qty, account=account)
+    else:
+        position.amount += decimal.Decimal(exchange_qty)
+
+    session.add(position)
+
+
 def matchBuyOrder(session, buy_order):
     while True:
         sell_order = getOpenOrder(session, buy_order.symbol, OrderType.SELL, Order.limit_price.asc())
@@ -56,6 +71,7 @@ def matchBuyOrder(session, buy_order):
         closeOrder(session, buy_order, exchange_qty, exchange_price)
         closeOrder(session, sell_order, exchange_qty, exchange_price)
 
+        addPosition( session,buy_order.account, buy_order.symbol, exchange_qty)
         if buy_order.order_status == OrderStatus.EXECUTE:
             break
 
@@ -76,6 +92,7 @@ def matchSellOrder(session, sell_order):
         closeOrder(session, buy_order, exchange_qty, exchange_price)
         closeOrder(session, sell_order, exchange_qty, exchange_price)
 
+        addPosition(session, buy_order.account, buy_order.symbol, exchange_qty)
         if sell_order.order_status == OrderStatus.CANCEL:
             break
 
