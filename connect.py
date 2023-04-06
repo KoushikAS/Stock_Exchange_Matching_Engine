@@ -408,7 +408,9 @@ def receive_connection(c: socket.socket):
                 ses = Session()
                 account = ses.query(Account).filter(Account.id == account_id).with_for_update().scalar()
                 if entry.tag == 'order':
+                    print(f"ID: {account_id} into create_order")
                     create_order(ses, entry, account, root, res)
+                    print(f"ID: {account_id} out of create_order")
                 elif entry.tag == 'cancel':
                     cancel_order(ses, entry, account, root, res)
                 elif entry.tag == 'query':
