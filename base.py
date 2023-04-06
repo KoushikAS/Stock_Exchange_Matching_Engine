@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine('postgresql://postgres:postgres@db:5432/postgres')
+engine = create_engine('postgresql://postgres:Bletsch568@db:5432/postgres')
 
 m = MetaData()
 m.reflect(engine)
