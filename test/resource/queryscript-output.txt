@@ -1,0 +1,5 @@
+<results>
+ <status id="1">
+    <open shares="10"/>
+ </status>
+</results>

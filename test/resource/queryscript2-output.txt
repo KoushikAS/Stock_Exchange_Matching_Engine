@@ -1,0 +1,6 @@
+<results>
+ <status id="2">
+    <open shares="5"/>
+    <executed shares="5" price="6"/>
+ </status>
+</results>

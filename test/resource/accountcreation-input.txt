@@ -1,9 +1,9 @@
-203
+193
 <?xml version="1.0" encoding="UTF-8"?>
 <create>
- <account id="1" balance="1000"/>
+ <account id="1" balance="10"/>
   <symbol sym="SPY">
-   <account id="1">100000</account>
+   <account id="1">10</account>
   </symbol>
-  <account id="2" balance="100000"/>
+  <account id="2" balance="10"/>
 </create>
