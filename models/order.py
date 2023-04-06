@@ -28,7 +28,7 @@ class Order(Base):
     limit_price = Column(Numeric)
     order_type = Column(Enum(OrderType))
     order_status = Column(Enum(OrderStatus), default=OrderStatus.OPEN)
-    create_time = Column(DateTime, default=int(time.time()))
+    create_time = Column(Integer, default=int(time.time()))
 
     def __init__(self, account, symbol, amount, limit_price, order_type, order_status):
         self.account = account
