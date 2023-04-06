@@ -13,13 +13,13 @@ def place_order(input_file):
 
 def buy_shares():
     print("Buying Share")
-    for i in range(2000):
+    for i in range(10):
         place_order("resource/buyscriptloadtesting-input.txt")
 
 
 def sell_shares():
     print("Sell Share")
-    for i in range(2000):
+    for i in range(10):
         place_order("resource/sellscriptloadtesting-input.txt")
 
 
