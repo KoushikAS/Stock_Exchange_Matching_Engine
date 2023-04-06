@@ -21,7 +21,7 @@ actual_output = re.sub("\n", "", actual_output)
 actual_output = re.sub("\t", "", actual_output)
 actual_output = re.sub(" ", "", actual_output)
 if repr(actual_output.strip()) == repr(expected_output.strip()):
-    print("Test passed")
+    print("Success: Test passed")
 else:
     print("Test failed" )
     print("Expected:" + repr(expected_output))
