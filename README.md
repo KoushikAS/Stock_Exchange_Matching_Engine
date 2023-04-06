@@ -4,6 +4,7 @@
 following the requirements of  https://sakai.duke.edu/access/content/attachment/f74215cd-4881-4c67-a401-0f9ed2057e60/Assignments/96b4b0b0-f808-4ba2-bd9d-5727116863b4/hw4.pdf
 
 #Authors 
+
 Koushik Annareddy Sreenath (ka266)
 Ryan Mecca (rm358)
 
@@ -11,6 +12,7 @@ Ryan Mecca (rm358)
 To run the application 
 
 ```
+docker-compose build
 docker-compose up -d
 ```
 
