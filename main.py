@@ -58,7 +58,8 @@ if __name__ == "__main__":
     Base.metadata.create_all(engine)
     p = Pool(processes=4)
     while (True):
-        p.map_async(receive_connection, [False, ''])
+        # p.map_async(receive_connection, [False, ''])
+        receive_connection(False, '')
     # add the ability to schedule from a core pool here
     # receive_connection(True, "test/resource/accountcreation-input.txt")
     # receive_connection(True, "test/resource/buyscript-input.txt")
