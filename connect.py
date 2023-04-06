@@ -29,6 +29,7 @@ def get_xml() -> tuple[socket.socket, str]:
     client_socket.bind(("0.0.0.0", 12345))
     client_socket.listen(5)
     c, addr = client_socket.accept()
+    print("got connection")
     while not newline_rec:
         xml_size_bytes = c.recv(1)
         xml_size_str = xml_size_bytes.decode()
@@ -37,6 +38,7 @@ def get_xml() -> tuple[socket.socket, str]:
         else:
             buffer += xml_size_str
     xml_size = int(buffer)
+    print(xml_size)
     action_xml = c.recv(xml_size)
     return c, action_xml
 
