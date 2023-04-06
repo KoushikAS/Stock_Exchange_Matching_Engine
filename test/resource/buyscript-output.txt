@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <results>
- <opened sym="SPY" amount="10" limit="2" id="1"/>
+ <opened id="1" sym="SPY" amount="5.0" limit="2.0" />
 </results>

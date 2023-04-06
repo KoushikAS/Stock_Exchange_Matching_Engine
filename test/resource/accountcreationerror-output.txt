@@ -1,4 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <results>
- <error id="1">Account already created</error>
- <error id="2">Account already created</error>
-<results>
+ <error id="1">Account already exists</error>
+ <error id="2">Account already exists</error>
+</results>

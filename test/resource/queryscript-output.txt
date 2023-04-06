@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <results>
  <status id="1">
-    <open shares="10"/>
+    <open shares=5.0/>
  </status>
 </results>

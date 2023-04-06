@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <results>
- <canceled id="1">
-    <canceled shares="5"/>
-    <executed shares="5" price="6"/>
- </status>
+ <canceled id="2">
+    <canceled shares=-5.0/>
+    <executed shares=5.0 price=1.0/>
+ </canceled>
 </results>

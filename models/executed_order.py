@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, Numeric, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from models.base import Base
-import datetime
+import time
 
 
 class ExecutedOrder(Base):
@@ -14,7 +14,7 @@ class ExecutedOrder(Base):
 
     executed_amount = Column(Numeric)
     executed_price = Column(Numeric)
-    executed_time = Column(DateTime, default=datetime.datetime.utcnow)
+    executed_time = Column(Integer, default=int(time.time()))
 
     def __init__(self, order, executed_amount, executed_price):
         self.order = order

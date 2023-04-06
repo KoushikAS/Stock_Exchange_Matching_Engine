@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <results>
- <error sym="SPY" amount="5" limit="2">Invalid TRANS_ID</error>
+ <errorid="3">Order to query does not exist</error>
 </results>
