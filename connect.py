@@ -204,6 +204,7 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
         text = root.createTextNode('Insufficient funds in account')
         xml_result.appendChild(text)
         res.appendChild(xml_result)
+        session.commit()
         return
 
     if amt < 0:
@@ -289,9 +290,9 @@ def cancel_order(session: Session, entry: ET.Element, account: Account, root: mi
     executed = session.query(ExecutedOrder).filter_by(order=order_to_cancel)
     for e in executed:
         c = root.createElement('executed')
-        c.appendChild('shares', str(e.executed_amount))
-        c.appendChild('price', str(e.executed_price))
-        c.appendChild('time', str(e.executed_time))
+        c.setAttribute('shares', str(e.executed_amount))
+        c.setAttribute('price', str(e.executed_price))
+        c.setAttribute('time', str(e.executed_time))
         xml_result.appendChild(c)
     res.appendChild(xml_result)
 
@@ -317,33 +318,28 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
     # get this order from the db
     xml_result = root.createElement('status')
     xml_result.setAttribute('id', id)
-    print("past fail checks")
-    print(order_to_query.order_status)
     if order_to_query.order_status is OrderStatus.OPEN:
-        print("started if")
         child1 = root.createElement('open')
-        print(str(order_to_query.amount))
-        child1.appendChild('shares', str(order_to_query.amount))
-        print("went if")
+        child1.setAttribute('shares', str(order_to_query.amount))
     elif order_to_query.order_status is OrderStatus.CANCEL:
-        print("started else")
         child1 = root.createElement('canceled')
-        child1.appendChild('shares', str(order_to_query.amount))
-        child1.appendChild('time', str(order_to_query.create_time))
-        print("went else")
+        child1.setAttribute('shares', str(order_to_query.amount))
+        child1.setAttribute('time', str(order_to_query.create_time))
     else:
-        print("AHA THIS IS THE ISSUE")
+        xml_result = root.createElement('error')
+        xml_result.setAttribute('id', id)
+        text = root.createTextNode('Order finished executing and was closed')
+        xml_result.appendChild(text)
+        res.appendChild(xml_result)
+        return
     xml_result.appendChild(child1)
-    print("appended the first child")
     executed = session.query(ExecutedOrder).filter_by(order=order_to_query)
-    print("got the executed nodes")
     for e in executed:
         c = root.createElement('executed')
-        c.appendChild('shares', str(e.executed_amount))
-        c.appendChild('price', str(e.executed_price))
-        c.appendChild('time', str(e.executed_time))
+        c.setAttribute('shares', str(e.executed_amount))
+        c.setAttribute('price', str(e.executed_price))
+        c.setAttribute('time', str(e.executed_time))
         xml_result.appendChild(c)
-    print("at the end")
     res.appendChild(xml_result)
 
 
