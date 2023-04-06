@@ -13,13 +13,13 @@ def place_order(input_file):
 
 def buy_shares():
     print("Buying Share")
-    for i in range(100):
+    for i in range(500):
         place_order("resource/buyscriptloadtesting-input.txt")
 
 
 def sell_shares():
     print("Sell Share")
-    for i in range(100):
+    for i in range(500):
         place_order("resource/sellscriptloadtesting-input.txt")
 
 
@@ -55,5 +55,5 @@ if __name__ =="__main__":
         # print(f'Difference: {diff}')
     eT = time.time()
     print(f'Average time: {sum(lst) / len(lst)}')
-    print(f'Avg2: {(sT - eT) / 10}')
+    print(f'Avg2: {(eT - sT) / 10}')
 
