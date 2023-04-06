@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <results>
  <canceled id="1">
     <canceled shares="5"/>

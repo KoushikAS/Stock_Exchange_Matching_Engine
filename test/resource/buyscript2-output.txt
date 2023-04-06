@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <results>
  <opened sym="SPY" amount="5" limit="6" id="3"/>
 </results>
