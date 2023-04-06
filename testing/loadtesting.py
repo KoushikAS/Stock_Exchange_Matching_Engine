@@ -48,5 +48,5 @@ if __name__ =="__main__":
 
     diff = endTime - startTime
 
-    print(f'Difference: {diff.strftime("%H:%M:%S")}')
+    print(f'Difference: {diff}')
 
