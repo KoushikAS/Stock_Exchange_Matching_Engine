@@ -213,6 +213,7 @@ def receive_connection(c: socket.socket):
                         text = root.createTextNode('Account already exists')
                         xml_result.appendChild(text)
                         res.appendChild(xml_result)
+                    session.commit()
 
                 elif entry.tag == 'symbol':
                     sym = entry.attrib.get('sym')
@@ -234,6 +235,7 @@ def receive_connection(c: socket.socket):
                     create_position(session2, entry, symbol, root, res)
                     session2.commit()
                 else:
+                    session.commit()
                     raise Exception("Malformatted xml in create")
         elif xml_tree.tag == 'transactions':
             session = Session()
@@ -264,4 +266,3 @@ def receive_connection(c: socket.socket):
         else:
             c.send(root.toprettyxml(encoding="utf-8"))
         c.close()
-    print("connection closed")
