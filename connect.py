@@ -263,4 +263,5 @@ def receive_connection(c: socket.socket):
             print(root.toprettyxml(encoding="utf-8").decode())
         else:
             c.send(root.toprettyxml(encoding="utf-8"))
+        c.shutdown()
     print("connection closed")
