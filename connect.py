@@ -187,7 +187,7 @@ def receive_connection(client_socket: socket.socket, testing: bool, path: str):
         action_xml = get_test_xml(path)
     else:
         c, addr = client_socket.accept()
-        action_xml = get_xml()
+        action_xml = get_xml(c)
         print(action_xml)
     try:
         xml_tree = ET.fromstring(action_xml)
