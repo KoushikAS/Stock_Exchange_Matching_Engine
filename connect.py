@@ -322,7 +322,7 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
     if order_to_query.order_status is OrderStatus.OPEN:
         child1 = root.createElement('open')
         child1.appendChild('shares', str(order_to_query.amount))
-    else:
+    elif order_to_query.order_status is OrderStatus.CANCEL:
         child1 = root.createElement('canceled')
         child1.appendChild('shares', str(order_to_query.amount))
         child1.appendChild('time', str(order_to_query.create_time))

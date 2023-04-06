@@ -1,4 +1,3 @@
-import os
 import socket
 from multiprocessing import Pool
 
