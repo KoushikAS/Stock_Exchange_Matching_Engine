@@ -204,7 +204,6 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
         text = root.createTextNode('Insufficient funds in account')
         xml_result.appendChild(text)
         res.appendChild(xml_result)
-        session.commit()
         return
 
     if amt < 0:
@@ -227,7 +226,6 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
             text = root.createTextNode('Insufficient shares in account')
             xml_result.appendChild(text)
             res.appendChild(xml_result)
-            session.commit()  # to release position
             return
 
         position.amount -= decimal.Decimal(abs(amt))
@@ -245,7 +243,6 @@ def create_order(session: Session, entry: ET.Element, account: Account, root: mi
         matchBuyOrder(session, newOrder, account)
     else:
         matchSellOrder(session, newOrder, account)
-    session.commit()
     xml_result = root.createElement('opened')
     xml_result.setAttribute('id', str(newOrder.id))
     xml_result.setAttribute('sym', sym)
@@ -356,7 +353,6 @@ def receive_connection(c: socket.socket):
         root = minidom.Document()
         res = root.createElement('results')
         root.appendChild(res)
-        print(xml_tree.tag)
 
         if xml_tree.tag == 'create':
             for entry in xml_tree:
@@ -411,13 +407,11 @@ def receive_connection(c: socket.socket):
                     create_order(ses, entry, account, root, res)
                 elif entry.tag == 'cancel':
                     cancel_order(ses, entry, account, root, res)
-                    ses.commit()
                 elif entry.tag == 'query':
-                    print("getting here")
                     query_order(ses, entry, account, root, res)
-                    ses.commit()
                 else:
                     raise Exception("Malformatted xml in transaction")
+                ses.commit()
         else:
             raise Exception("Got an XML that did not follow format")
 
