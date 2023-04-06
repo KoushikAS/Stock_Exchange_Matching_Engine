@@ -1,6 +1,6 @@
 import sys
 import threading
-import socket, datetime
+import socket, time
 
 def place_order(input_file):
     input = open( input_file, "rb").read()
@@ -39,17 +39,17 @@ if __name__ =="__main__":
         t1 = threading.Thread(target=buy_shares, args=())
         t2 = threading.Thread(target=sell_shares, args=())
 
-        startTime = datetime.datetime.now()
+        startTime = time.time()
         t1.start()
         t2.start()
 
         t1.join()
         t2.join()
 
-        endTime = datetime.datetime.now()
+        endTime = time.time()
 
         diff = endTime - startTime
-        lst.append(diff.seconds)
+        lst.append(diff)
 
         # print(f'Difference: {diff}')
     print(f'Average time: {sum(lst) / len(lst)}')
