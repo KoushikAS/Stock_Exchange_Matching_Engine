@@ -343,7 +343,7 @@ def query_order(session: Session, entry: ET.Element, account: Account, root: min
 def receive_connection(c: socket.socket):
     with c:
         action_xml = get_xml(c)
-        print(action_xml)
+        # print(action_xml)
         try:
             xml_tree = ET.fromstring(action_xml)
         except:
@@ -394,8 +394,6 @@ def receive_connection(c: socket.socket):
         elif xml_tree.tag == 'transactions':
             session = Session()
             account_id = xml_tree.attrib.get('id')
-            print("ACCCccc")
-            print(account_id)
             acc_exist = True
             account = session.query(Account).filter(Account.id == account_id).scalar()
             if account is None:
@@ -404,13 +402,10 @@ def receive_connection(c: socket.socket):
             session.close()
             for entry in xml_tree:
                 ses = Session()
-                print("I just made a new session")
                 account = ses.query(Account).filter(Account.id == account_id).with_for_update().scalar()
                 if entry.tag == 'order':
                     if acc_exist:
-                        print(f"ID: {account_id} into create_order")
                         create_order(ses, entry, account, root, res)
-                        print(f"ID: {account_id} out of create_order")
                     else:
                         xml_result = root.createElement('error')
                         xml_result.setAttribute('id', account_id)
