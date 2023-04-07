@@ -1,0 +1,7 @@
+Vulnerability taken care
+1) We are using ORM (SQL Alchemy). Therefore SQL injecton is prevented.
+2) Using Database (select by update) to handle race condition. Since Postgres DB is used to handle racecondition. we are confident that our code will not have a race condition. 
+
+Potential Vulnerability
+1) Having postgres db host and password in Docker compose file 
+    However, we have mitigated this harm by running a docker container. So the user can't escalate their access to get the server system.
