@@ -36,21 +36,21 @@ if __name__ =="__main__":
 
     lst = []
     sT = time.time()
-    # for i in range(0, 10):
-    t1 = threading.Thread(target=buy_shares, args=())
-    t2 = threading.Thread(target=sell_shares, args=())
+    for i in range(0, 10):
+        t1 = threading.Thread(target=buy_shares, args=())
+        t2 = threading.Thread(target=sell_shares, args=())
 
-    startTime = time.time()
-    t1.start()
-    t2.start()
+        startTime = time.time()
+        t1.start()
+        t2.start()
 
-    t1.join()
-    t2.join()
+        t1.join()
+        t2.join()
 
-    endTime = time.time()
+        endTime = time.time()
 
-    diff = endTime - startTime
-    lst.append(diff)
+        diff = endTime - startTime
+        lst.append(diff)
 
         # print(f'Difference: {diff}')
     eT = time.time()
