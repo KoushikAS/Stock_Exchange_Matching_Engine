@@ -3,7 +3,7 @@
 <create>
  <account id="3" balance="10"/>
   <symbol sym="SPY">
-   <account id="3">10000</account>
+   <account id="3">1000000000</account>
   </symbol>
-  <account id="4" balance="10000"/>
+  <account id="4" balance="1000000000"/>
 </create>

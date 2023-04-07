@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base, scoped_session
 from sqlalchemy.exc import SQLAlchemyError
 
 try:
-    engine = create_engine('postgresql://postgres:postgres@db:5432/postgres')
+    engine = create_engine('postgresql://postgres:Bletsch568@db:5432/postgres')
 except:
     print("Exception when trying to create engine.")
     sys.exit()
