@@ -1,7 +1,14 @@
 Vulnerability taken care
 1) We are using ORM (SQL Alchemy). Therefore SQL injecton is prevented.
-2) Using Database (select by update) to handle race condition. Since Postgres DB is used to handle racecondition. we are confident that our code will not have a race condition. 
+2) Using Database (select by update) to handle race condition. Since Postgres DB is used to handle race conditions, we are confident that our code will not have dangerous race conditions. 
 
 Potential Vulnerability
 1) Having postgres db host and password in Docker compose file 
     However, we have mitigated this harm by running a docker container. So the user can't escalate their access to get the server system.
+    We have chosen decently strong passwords, but there is always the risk that these passwords could be broken and access to the server could be gained.
+    In a real stock exchange, multifactor authentication as well as constantly changing passwords would be a very good idea to protect the database.
+2) As instructed by the project document, there is a risk of a user overdrafting their account. Our service would not notify the user of this,
+    and it would be the users responsibility to monitor their account balance.
+3) As it was not instructed in the project description, there is a chance that a user could match with themselves for an order.
+    For this to occur, they would need to maintain both buying and selling positions for the same stock, as well as have them in the same price range.
+    This action makes no sense in the real world, so special cases were not introduced to prevent against this. Performing this action makes no sense.
