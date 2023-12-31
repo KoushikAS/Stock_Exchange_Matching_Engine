@@ -41,8 +41,8 @@ This project is about creating an exchange matching engine for a stock/commoditi
 1. Clone the repository to your local machine:
 
 ```sh
-git clone https://github.com/KoushikAS/HTTP_Caching_Proxy.git
-cd HTTP_Caching_Proxy
+git clone https://github.com/KoushikAS/Stock_Exchange_Matching_Engine.git
+cd Stock_Exchange_Matching_Engine
 ```
 
 ### Running with Docker
